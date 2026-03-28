@@ -107,11 +107,17 @@ function UI:CreateMainWindow()
     frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
     frame:SetFrameStrata("DIALOG")
     CreateFrameBackdrop(frame)
+    frame:SetBackdropColor(0, 0, 0, 0) -- Make backdrop transparent to show wallpaper
     
-    local wallpaper = frame:CreateTexture(nil, "BACKGROUND", nil, -7)
+    local wallpaper = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
     wallpaper:SetAllPoints()
     wallpaper:SetTexture("Interface\\AddOns\\PB_HealingFrames\\MTCWallpaper.tga")
-    wallpaper:SetAlpha(0.4)
+    wallpaper:SetAlpha(1.0) -- Full opacity since it's the background now
+    
+    -- Optional: add a dark tint over the wallpaper to keep text readable
+    local tint = frame:CreateTexture(nil, "BACKGROUND", nil, -7)
+    tint:SetAllPoints()
+    tint:SetTexture(0, 0, 0, 0.6)
     
     frame:Hide()
 
