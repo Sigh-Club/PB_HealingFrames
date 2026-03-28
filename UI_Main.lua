@@ -115,7 +115,7 @@ function UI:CreateMainWindow()
 
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetFont("Fonts\\FRIZQT__.TTF", 20, "OUTLINE")
-    title:SetPoint("TOPLEFT", 20, -15)
+    title:SetPoint("TOP", 0, -15)
     title:SetText("PB: Healing Frames V 1.3.1 beta")
 
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -283,7 +283,7 @@ function UI:LoadLayout(c)
     c.bWidth:SetPoint("TOPLEFT", 280, y - 40); c.bWidth:SetWidth(180); y = y - 85
 
     c.bHeight = mkSlider(c, "Height", 10, 120, 1, function() return ns.DB.frame.bars.height or 22 end, function(v) ns.DB.frame.bars.height = v end)
-    bHeight = c.bHeight; bHeight:SetPoint("TOPLEFT", 15, y); bHeight:SetWidth(180)
+    c.bHeight:SetPoint("TOPLEFT", 15, y); c.bHeight:SetWidth(180)
 
     c.bSpacing = mkSlider(c, "Spacing", 0, 40, 1, function() return ns.DB.frame.bars.spacing or 4 end, function(v) ns.DB.frame.bars.spacing = v end)
     c.bSpacing:SetPoint("TOPLEFT", 280, y); c.bSpacing:SetWidth(180); y = y - 65
@@ -384,7 +384,7 @@ function UI:LoadStyle(c)
     mkCheck(c, "Inverted (Deficit)", "Show health deficit instead of full bar.", 
         function() return ns.DB.frame.invertedColors end, function(v) ns.DB.frame.invertedColors = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
-    mkColorButton(c, "Hover Color", function() return ns.DB.frame.hoverColor or {1, 1, 1, 0.15} end, function(v) ns.DB.frame.hoverColor = v end):SetPoint("TOPLEFT", 15, y); y = y - 45
+    mkColorButton(c, "Hover Color", function() return ns.DB.frame.hoverColor or {1, 1, 1, 0.15} end, function(v) ns.DB.frame.hoverColor = v end):SetPoint("TOPLEFT", 15, y); y = y - 40
 
     local textures = {
         { name = "Classic", path = "Interface\\TargetingFrame\\UI-StatusBar" },
@@ -439,7 +439,7 @@ local function CreateSpellPicker()
     local f = CreateFrame("Frame", "PB_SpellPicker", UIParent)
     f:SetSize(450, 500)
     f:SetPoint("CENTER")
-    f:SetFrameStrata("TOOLTIP") -- Higher strata to be on top
+    f:SetFrameStrata("TOOLTIP") -- Highest strata
     f:Hide()
     CreateFrameBackdrop(f)
     f:SetBackdropColor(0.05, 0.05, 0.05, 0.98)
@@ -528,8 +528,8 @@ local function CreateSpellPicker()
             local inCat = (cat == "All")
             if not inCat then
                 local role = spell.role
-                if cat == "Healing" and intel.healingRoles and intel.healingRoles[role] then inCat = true
-                elseif cat == "Support" and intel.supportRoles and intel.supportRoles[role] then inCat = true
+                if cat == "Healing" and (role == "heal" or role == "hot" or role == "shield_absorb") then inCat = true
+                elseif cat == "Support" and role == "support" then inCat = true
                 elseif cat == "Buffs" and role == "buff" then inCat = true
                 elseif cat == "Cleanse" and role == "cleanse" then inCat = true
                 elseif cat == "Res" and role == "resurrection" then inCat = true
@@ -540,12 +540,25 @@ local function CreateSpellPicker()
                 count = count + 1
                 local btn = self.buttons[count]
                 if not btn then
-                    btn = CreateFrame("Button", nil, self.scrollChild, "UIPanelButtonTemplate")
-                    btn:SetSize(370, 26); btn:SetText("")
-                    btn.icon = btn:CreateTexture(nil, "OVERLAY")
-                    btn.icon:SetSize(22, 22); btn.icon:SetPoint("LEFT", 5, 0)
-                    btn:GetFontString():SetPoint("LEFT", btn.icon, "RIGHT", 10, 0)
-                    btn:GetFontString():SetJustifyH("LEFT")
+                    btn = CreateFrame("Button", nil, self.scrollChild)
+                    btn:SetSize(370, 28)
+                    
+                    local bg = btn:CreateTexture(nil, "BACKGROUND")
+                    bg:SetAllPoints(); bg:SetTexture(0.15, 0.15, 0.15, 0.8)
+                    btn.bg = bg
+                    
+                    local highlight = btn:CreateTexture(nil, "HIGHLIGHT")
+                    highlight:SetAllPoints(); highlight:SetTexture(1, 1, 1, 0.1)
+                    
+                    local icon = btn:CreateTexture(nil, "OVERLAY")
+                    icon:SetSize(22, 22); icon:SetPoint("LEFT", 5, 0)
+                    btn.icon = icon
+                    
+                    local text = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+                    text:SetPoint("LEFT", icon, "RIGHT", 10, 0)
+                    text:SetJustifyH("LEFT")
+                    btn:SetFontString(text)
+                    
                     btn:SetScript("OnClick", function()
                         ns.Bindings:SetSpell(self.currentSlot, spell.name)
                         self:Hide()
@@ -556,7 +569,7 @@ local function CreateSpellPicker()
                 btn:SetText(spell.name)
                 btn.icon:SetTexture(spell.texture)
                 btn:Show()
-                y = y + 28
+                y = y + 30
             end
         end
         self.scrollChild:SetHeight(math.max(y, 100))
