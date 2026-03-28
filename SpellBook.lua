@@ -17,22 +17,10 @@ local function normalizeRole(role)
     return role
 end
 
-function SpellBook:GetRangeSpellName()
-    return self.rangeSpellName
-end
-
-function SpellBook:PlayerCanDispel(dtype)
-    return self.dispelCapabilities[dtype] and true or false
-end
-
-function SpellBook:GetBindable()
-    return self.bindable
-end
-
-function SpellBook:FindByName(name)
-    if not name or name == "" then return nil end
-    return self.byName[string.lower(name)]
-end
+function SpellBook:GetRangeSpellName() return self.rangeSpellName end
+function SpellBook:PlayerCanDispel(dtype) return self.dispelCapabilities[dtype] and true or false end
+function SpellBook:GetBindable() return self.bindable end
+function SpellBook:FindByName(name) return name and self.byName[string.lower(name)] end
 
 -- Shared scan tooltip
 local scanTooltip
@@ -47,7 +35,8 @@ end
 local function guessRole(slot, bookType)
     local tooltip = getScanTooltip()
     tooltip:ClearLines()
-    tooltip:SetSpell(slot, bookType)
+    -- FIXED: Use SetSpellBookItem for 3.3.5a compatibility
+    tooltip:SetSpellBookItem(slot, bookType)
     
     local name = GetSpellBookItemName(slot, bookType)
     if not name then return nil, "none" end
@@ -190,7 +179,7 @@ function SpellBook:Scan(force)
             self.stats.healing = self.stats.healing + 1
         end
     end
-
+    
     if force then
         ns:Print(string.format("Scan complete: %d bindable spells found (%d healing)", self.stats.bindable, self.stats.healing))
     end
