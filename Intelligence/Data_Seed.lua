@@ -94,15 +94,31 @@ HI.roleSpellNames = {
 }
 
 HI.keywordRoles = {
-    direct_heal = { "heal", "holy light", "flash of light", "flash heal", "healing wave", "lesser healing wave", "chain heal", "nourish", "regrowth", "healing touch", "circle of life" },
+    heal = { "heal", "holy light", "flash of light", "flash heal", "healing wave", "lesser healing wave", "chain heal", "nourish", "regrowth", "healing touch", "circle of life" },
     hot = { "renew", "rejuvenation", "lifebloom", "wild growth", "riptide", "prayer of mending" },
-    shield_absorb = { "power word: shield", "sacred shield", "earth shield", "beacon of light" },
+    shield_absorb = { "power word: shield", "sacred shield", "earth shield", "beacon of light", "divine aegis" },
     cleanse = { "cleanse", "purify", "abolish", "remove curse", "cure", "dispel", "cleanse spirit" },
     resurrection = { "resurrection", "redemption", "rebirth", "ancestral spirit", "revive" },
-    support = { "beacon", "sacred", "pain suppression", "guardian spirit", "innervate", "divine hymn", "mana tide", "power infusion" },
+    support = { "pain suppression", "guardian spirit", "innervate", "divine hymn", "mana tide", "power infusion", "hand of sacrifice", "hand of protection", "hand of freedom" },
     buff = { "blessing of", "greater blessing", "mark of the wild", "gift of the wild", "fortitude", "divine spirit", "shadow protection", "arcane intellect", "arcane brilliance", "thorns" },
-    form = { "tree of life", "form" },
-    damage_to_heal = { "judgement", "smite", "holy shock", "atonement" },
+}
+
+HI.trackedAuras = {
+    topleft = {
+        "rejuvenation", "renew", "riptide", "sacred shield"
+    },
+    topright = {
+        "lifebloom", "prayer of mending", "earth shield", "beacon of light"
+    },
+    bottomleft = {
+        "wild growth", "power word: shield", "regrowth", "divine aegis"
+    },
+    bottomright = {
+        "abolish disease", "abolish poison", "fear ward", "pain suppression"
+    },
+    center = {
+        "beacon of light" -- Track Beacon in center too if desired, or just corners
+    }
 }
 
 HI.dispelAbilities = {

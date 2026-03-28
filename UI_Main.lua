@@ -708,6 +708,7 @@ function UI:RefreshKeybinds()
     local slots = ns.Bindings:GetOrderedSlots()
     if not content.keyRows then content.keyRows = {} end
 
+    -- Hide all existing rows first
     for _, row in ipairs(content.keyRows) do row:Hide() end
 
     for i, slot in ipairs(slots) do
@@ -715,25 +716,42 @@ function UI:RefreshKeybinds()
         if not row then
             row = CreateFrame("Frame", nil, content)
             row:SetSize(550, 32); row:SetPoint("TOPLEFT", 15, y - (i-1) * 34)
+            
+            local rowBg = row:CreateTexture(nil, "BACKGROUND")
+            rowBg:SetAllPoints(); rowBg:SetTexture(0, 0, 0, 0.3)
+            
             row.txt = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-            row.txt:SetPoint("LEFT", 5, 0)
+            row.txt:SetPoint("LEFT", 10, 0)
+            
             row.spell = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            row.spell:SetPoint("LEFT", 160, 0); row.spell:SetWidth(350)
+            row.spell:SetPoint("LEFT", 160, 0); row.spell:SetWidth(300)
+            
             local plus = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
             plus:SetSize(32, 24); plus:SetPoint("RIGHT", -5, 0); plus:SetText("+")
             row.plus = plus
+            
             local clr = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
             clr:SetSize(32, 24); clr:SetPoint("RIGHT", plus, "LEFT", -5, 0); clr:SetText("X")
             row.clr = clr
+            
             content.keyRows[i] = row
         end
+        
         row.txt:SetText(slot)
         local rec = ns.Bindings:Get(slot)
         local text = rec.value or ""
         if text == "" then text = "|cff888888-- " .. rec.type .. " --|r" end
         row.spell:SetText(text)
-        row.plus:SetScript("OnClick", function() spellPickerFrame:Open(slot, row) end)
-        row.clr:SetScript("OnClick", function() ns.Bindings:Clear(slot); self:RefreshKeybinds() end)
+        
+        row.plus:SetScript("OnClick", function()
+            spellPickerFrame:Open(slot, row)
+        end)
+        
+        row.clr:SetScript("OnClick", function()
+            ns.Bindings:Clear(slot)
+            self:RefreshKeybinds()
+        end)
+
         row:Show()
     end
 end

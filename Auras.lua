@@ -8,7 +8,8 @@ local function collectActiveAuras(unit)
     local active = {}
     if not unit then return active end
     
-    -- Scan Buffs (Helpful)
+    -- Track both Helpful (Buffs) and Harmful (Debuffs)
+    -- Helpful
     for i = 1, 40 do
         local name, _, icon, count, _, duration, expirationTime, caster = UnitAura(unit, i, "HELPFUL")
         if not name then break end
@@ -16,21 +17,23 @@ local function collectActiveAuras(unit)
         local lname = string.lower(name)
         local pos = positionMap[lname]
         
-        -- Track if it's from player OR if it's an important buff we track (like Beacon)
+        -- Special case: Beacon of Light should be tracked even if not cast by us? 
+        -- Usually healers want to see THEIR beacon.
         if pos and not active[pos] then
-            if caster == "player" or caster == "pet" or not caster then
+            if caster == "player" or caster == "pet" or lname == "beacon of light" then
                 active[pos] = { icon = icon, count = count, duration = duration, expires = expirationTime }
             end
         end
     end
     
-    -- Also scan for the center icon if it's a debuff we care about
+    -- Harmful (Debuffs for center icon)
     for i = 1, 40 do
-        local name, _, icon, count, dtype, duration, expirationTime = UnitAura(unit, i, "HARMFUL")
+        local name, _, icon, count, _, duration, expirationTime = UnitAura(unit, i, "HARMFUL")
         if not name then break end
         
         local lname = string.lower(name)
-        if positionMap[lname] == "center" then
+        -- If we have specifically tracked debuffs for the center
+        if positionMap[lname] == "center" and not active.center then
             active.center = { icon = icon, count = count, duration = duration, expires = expirationTime }
         end
     end
@@ -79,15 +82,21 @@ function Auras:UpdateButtonAuras(btn, cached)
         end
     elseif btn.unit then
         active = active or collectActiveAuras(btn.unit)
+        
+        -- If no center aura is set by collectActiveAuras, check if we have a curable debuff to show there
+        if not active.center and btn.curableDebuff then
+            local d = btn.curableDebuff
+            active.center = { icon = d.texture, count = d.count or 0, duration = d.duration or 0, expires = d.expires or 0 }
+        end
     end
 
     for pos, ind in pairs(btn.auraIndicators) do
         local data = active and active[pos]
         if data then
             ind.icon:SetTexture(data.icon)
-            ind.countText:SetText(data.count > 1 and data.count or "")
+            ind.countText:SetText((data.count and data.count > 1) and data.count or "")
             
-            if data.duration and data.duration > 0 then
+            if data.duration and data.duration > 0 and data.expires then
                 ind.cd:SetCooldown(data.expires - data.duration, data.duration)
                 ind.cd:Show()
                 

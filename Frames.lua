@@ -61,13 +61,13 @@ local function getCurableDebuff(unit)
     local prio = (ns.DB.frame and ns.DB.frame.dispelPriority) or intel.dispelPriority or {"Magic", "Curse", "Poison", "Disease"}
     local best
     for i = 1, 40 do
-        local name, _, icon, _, dtype = UnitDebuff(unit, i)
+        local name, _, icon, count, dtype, duration, expirationTime = UnitDebuff(unit, i)
         if not name then break end
         if dtype and ns.SpellBook and ns.SpellBook:PlayerCanDispel(dtype) then
             local rank = 999
             for idx, d in ipairs(prio) do if d == dtype then rank = idx break end end
             if not best or rank < best.rank then
-                best = { name = name, texture = icon, dtype = dtype, rank = rank }
+                best = { name = name, texture = icon, dtype = dtype, rank = rank, duration = duration, expires = expirationTime, count = count }
             end
         end
     end
@@ -230,16 +230,27 @@ local function CreateButton(i)
     targetGlow:EnableMouse(false)
     local tgTop = targetGlow:CreateTexture(nil, "OVERLAY")
     tgTop:SetPoint("TOPLEFT"); tgTop:SetPoint("TOPRIGHT"); tgTop:SetHeight(2); tgTop:SetTexture(1, 1, 1, 0.7)
-    local tgBottom = targetGlow:CreateTexture(nil, "OVERLAY")
-    tgBottom:SetPoint("BOTTOMLEFT"); tgBottom:SetPoint("BOTTOMRIGHT"); tgBottom:SetHeight(2); tgBottom:SetTexture(1, 1, 1, 0.7)
-    local tgLeft = targetGlow:CreateTexture(nil, "OVERLAY")
-    tgLeft:SetPoint("TOPLEFT"); tgLeft:SetPoint("BOTTOMLEFT"); tgLeft:SetWidth(2); tgLeft:SetTexture(1, 1, 1, 0.7)
-    local tgRight = targetGlow:CreateTexture(nil, "OVERLAY")
-    tgRight:SetPoint("TOPRIGHT"); tgRight:SetPoint("BOTTOMRIGHT"); tgRight:SetWidth(2); tgRight:SetTexture(1, 1, 1, 0.7)
+    local tgBottom = targetGlow:CreateTexture(nil, "BOTTOMLEFT"); tgBottom:SetPoint("BOTTOMRIGHT"); tgBottom:SetHeight(2); tgBottom:SetTexture(1, 1, 1, 0.7)
+    local tgLeft = targetGlow:CreateTexture(nil, "TOPLEFT"); tgLeft:SetPoint("BOTTOMLEFT"); tgLeft:SetWidth(2); tgLeft:SetTexture(1, 1, 1, 0.7)
+    local tgRight = targetGlow:CreateTexture(nil, "TOPRIGHT"); tgRight:SetPoint("BOTTOMRIGHT"); tgRight:SetWidth(2); tgRight:SetTexture(1, 1, 1, 0.7)
     targetGlow:Hide()
     b.targetGlow = targetGlow
 
-    -- 5b. Threat Glow (Red inner border)
+    -- 5b. Focus Glow (Yellow dashed or thinner border)
+    local focusGlow = CreateFrame("Frame", nil, b)
+    focusGlow:SetPoint("TOPLEFT", -1, 1)
+    focusGlow:SetPoint("BOTTOMRIGHT", 1, -1)
+    focusGlow:SetFrameLevel(b:GetFrameLevel() + 7)
+    focusGlow:EnableMouse(false)
+    local fgTop = focusGlow:CreateTexture(nil, "OVERLAY")
+    fgTop:SetPoint("TOPLEFT"); fgTop:SetPoint("TOPRIGHT"); fgTop:SetHeight(1); fgTop:SetTexture(1, 1, 0, 0.8)
+    local fgBottom = focusGlow:CreateTexture(nil, "BOTTOMLEFT"); fgBottom:SetPoint("BOTTOMRIGHT"); fgBottom:SetHeight(1); fgBottom:SetTexture(1, 1, 0, 0.8)
+    local fgLeft = focusGlow:CreateTexture(nil, "TOPLEFT"); fgLeft:SetPoint("BOTTOMLEFT"); fgLeft:SetWidth(1); fgLeft:SetTexture(1, 1, 0, 0.8)
+    local fgRight = focusGlow:CreateTexture(nil, "TOPRIGHT"); fgRight:SetPoint("BOTTOMRIGHT"); fgRight:SetWidth(1); fgRight:SetTexture(1, 1, 0, 0.8)
+    focusGlow:Hide()
+    b.focusGlow = focusGlow
+
+    -- 5c. Threat Glow (Red inner border)
     local threatGlow = CreateFrame("Frame", nil, b)
     threatGlow:SetPoint("TOPLEFT", 1, -1)
     threatGlow:SetPoint("BOTTOMRIGHT", -1, 1)
@@ -680,6 +691,12 @@ function Frames:UpdateButton(b)
         b.targetGlow:Hide()
     end
 
+    if not fake and unit and UnitIsUnit(unit, "focus") then
+        b.focusGlow:Show()
+    else
+        b.focusGlow:Hide()
+    end
+
     local stText = status
     if not stText then
         if hp < maxhp and dbf.showDeficit ~= false then
@@ -746,7 +763,7 @@ function Frames:OnEvent(event, unit)
         self:ApplyLayout() 
     elseif event == "PLAYER_REGEN_ENABLED" then
         processQueue()
-    elseif event == "PLAYER_TARGET_CHANGED" then
+    elseif event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
         for _, b in ipairs(self.buttons) do 
             if b:IsShown() and b.unit then self:UpdateButton(b) end 
         end
