@@ -116,7 +116,7 @@ function UI:CreateMainWindow()
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetFont("Fonts\\FRIZQT__.TTF", 20, "OUTLINE")
     title:SetPoint("TOP", 0, -15)
-    title:SetText("PB: Healing Frames V 1.2.2 beta")
+    title:SetText("PB: Healing Frames V 1.3.0 beta")
 
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -5, -5)
@@ -146,21 +146,21 @@ function UI:CreateMainWindow()
     tint:SetAllPoints()
     tint:SetTexture(0, 0, 0, 0.3)
 
-    local tabList = { "General", "Layout", "Style", "Keybinds" }
+    local tabList = { "General", "Layout", "Style", "Keybinds", "Profiles" }
     for i, name in ipairs(tabList) do
         local btn = CreateFrame("Button", nil, sidebar, "UIPanelButtonTemplate")
-        btn:SetSize(160, 36); btn:SetPoint("TOP", 0, -20 - (i-1) * 42)
+        btn:SetSize(140, 32); btn:SetPoint("TOP", 0, -15 - (i-1) * 38)
         btn:SetText(name)
         btn:SetScript("OnClick", function() self:ShowTab(name) end)
         tabs[name] = btn
         
         local scroll = CreateFrame("ScrollFrame", "PB_HF_TabScroll"..name, content, "UIPanelScrollFrameTemplate")
-        scroll:SetPoint("TOPLEFT", 15, -15)
-        scroll:SetPoint("BOTTOMRIGHT", -35, 15)
+        scroll:SetPoint("TOPLEFT", 10, -10)
+        scroll:SetPoint("BOTTOMRIGHT", -30, 10)
         scroll:Hide()
         
         local child = CreateFrame("Frame", nil, scroll)
-        child:SetSize(580, 1200)
+        child:SetSize(520, 1000)
         scroll:SetScrollChild(child)
         
         tabContent[name] = { scroll = scroll, child = child }
@@ -177,7 +177,8 @@ function UI:ShowTab(name)
             if name == "General" then self:LoadGeneral(data.child)
             elseif name == "Layout" then self:LoadLayout(data.child)
             elseif name == "Style" then self:LoadStyle(data.child)
-            elseif name == "Keybinds" then self:LoadKeybinds(data.child) end
+            elseif name == "Keybinds" then self:LoadKeybinds(data.child)
+            elseif name == "Profiles" then self:LoadProfiles(data.child) end
         else
             tabs[tName]:UnlockHighlight()
             data.scroll:Hide()
@@ -780,6 +781,148 @@ function UI:RefreshKeybinds()
             self:RefreshKeybinds()
         end)
 
+        row:Show()
+    end
+end
+
+function UI:LoadProfiles(c)
+    if c.loaded then self:RefreshProfiles(c); return end
+    local y = 0
+    
+    local title = c:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOPLEFT", 15, y); title:SetText("Profile Management")
+    y = y - 45
+
+    local curLabel = c:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    curLabel:SetPoint("TOPLEFT", 15, y); curLabel:SetText("Current Profile:")
+    c.activeProfileText = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    c.activeProfileText:SetPoint("LEFT", curLabel, "RIGHT", 10, 0)
+    y = y - 40
+
+    local newLabel = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    newLabel:SetPoint("TOPLEFT", 15, y); newLabel:SetText("Create New Profile:")
+    
+    local eb = CreateFrame("EditBox", "PB_HF_NewProfileEdit", c, "InputBoxTemplate")
+    eb:SetSize(200, 24); eb:SetPoint("LEFT", newLabel, "RIGHT", 10, 0); eb:SetAutoFocus(false)
+    
+    local createBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
+    createBtn:SetSize(80, 24); createBtn:SetPoint("LEFT", eb, "RIGHT", 10, 0); createBtn:SetText("Create")
+    createBtn:SetScript("OnClick", function()
+        local name = eb:GetText()
+        if name and name ~= "" then
+            ns.Profiles:CreateProfile(name)
+            eb:SetText("")
+            self:RefreshProfiles(c)
+        end
+    end)
+    y = y - 50
+
+    local listHeader = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    listHeader:SetPoint("TOPLEFT", 15, y); listHeader:SetText("Available Profiles")
+    y = y - 30
+    
+    c.profileRows = {}
+    c.profileY = y
+    
+    self:RefreshProfiles(c)
+    c.loaded = true
+end
+
+function UI:RefreshProfiles(c)
+    if not c then 
+        local data = tabContent["Profiles"]
+        if not data then return end
+        c = data.child
+    end
+    
+    c.activeProfileText:SetText(ns.Profiles:GetProfileName())
+    
+    local profiles = ns.Profiles:GetProfiles()
+    local y = c.profileY
+    
+    for _, row in ipairs(c.profileRows or {}) do row:Hide() end
+    c.profileRows = c.profileRows or {}
+    
+    for i, name in ipairs(profiles) do
+        local row = c.profileRows[i]
+        if not row then
+            row = CreateFrame("Frame", nil, c)
+            row:SetSize(500, 30)
+            row:SetPoint("TOPLEFT", 15, y - (i-1) * 32)
+            
+            row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+            row.name:SetPoint("LEFT", 5, 0)
+            
+            local setBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+            setBtn:SetSize(80, 22); setBtn:SetPoint("RIGHT", -180, 0); setBtn:SetText("Select")
+            row.setBtn = setBtn
+            
+            local copyBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+            copyBtn:SetSize(80, 22); copyBtn:SetPoint("LEFT", setBtn, "RIGHT", 5, 0); copyBtn:SetText("Copy To")
+            row.copyBtn = copyBtn
+            
+            local delBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+            delBtn:SetSize(80, 22); delBtn:SetPoint("LEFT", copyBtn, "RIGHT", 5, 0); delBtn:SetText("Delete")
+            row.delBtn = delBtn
+            
+            c.profileRows[i] = row
+        end
+        
+        row.name:SetText(name)
+        
+        row.setBtn:SetScript("OnClick", function()
+            ns.Profiles:SetProfile(name)
+            self:RefreshProfiles(c)
+            -- Refresh other tabs if they are loaded
+            for tName, data in pairs(tabContent) do
+                if data.child.loaded and tName ~= "Profiles" then
+                    data.child.loaded = false -- Force reload when switching back
+                end
+            end
+        end)
+        
+        row.copyBtn:SetScript("OnClick", function()
+            -- Logic to copy current profile TO this profile? 
+            -- Usually it's "Copy FROM"
+            -- Let's change it to "Copy From" this profile to CURRENT
+            StaticPopupDialogs["PB_HF_COPY_PROFILE"] = {
+                text = "Copy settings from '"..name.."' to current profile?",
+                button1 = "Yes", button2 = "No",
+                OnAccept = function()
+                    PB_HF_DB.profiles[ns.Profiles:GetProfileName()] = ns.Profiles:DeepCopy(PB_HF_DB.profiles[name])
+                    ns.Profiles:SetProfile(ns.Profiles:GetProfileName())
+                end,
+                timeout = 0, whileDead = true, hideOnEscape = true,
+            }
+            StaticPopup_Show("PB_HF_COPY_PROFILE")
+        end)
+        row.copyBtn:SetText("Copy From")
+        
+        row.delBtn:SetScript("OnClick", function()
+            if name == "Default" or name == ns.Profiles:GetProfileName() then
+                ns:Print("Cannot delete the Default or active profile.")
+                return
+            end
+            ns.Profiles:DeleteProfile(name)
+            self:RefreshProfiles(c)
+        end)
+        
+        -- Disable delete for Default and Active
+        if name == "Default" or name == ns.Profiles:GetProfileName() then
+            row.delBtn:Disable()
+        else
+            row.delBtn:Enable()
+        end
+        
+        -- Highlight active
+        if name == ns.Profiles:GetProfileName() then
+            row.name:SetTextColor(1, 0.8, 0)
+            row.setBtn:Disable()
+        else
+            row.name:SetTextColor(1, 1, 1)
+            row.setBtn:Enable()
+        end
+        
         row:Show()
     end
 end

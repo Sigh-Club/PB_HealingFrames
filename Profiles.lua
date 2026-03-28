@@ -4,48 +4,25 @@ ns.Profiles = Profiles
 
 local function defaults()
     return {
-        debug = false,
+        enabled = true,
         locked = false,
-        activeProfile = nil,
         frame = {
-            x = 400,
-            y = -240,
-            width = 180,
-            height = 22,
-            spacing = 3,
-            scale = 1.00,
+            layoutStyle = "bars",
+            x = nil,
+            y = nil,
             outOfRangeAlpha = 0.35,
-            outOfRangeTextAlpha = 0.55,
-            showHealthText = true,
-            grow = "DOWN",
-            useHealthGradient = true,
             highlightCurableDebuffs = true,
             healthyColor = {0.15, 0.78, 0.22},
             injuredColor = {0.95, 0.82, 0.20},
             criticalColor = {0.95, 0.15, 0.15},
             criticalThreshold = 35,
             injuredThreshold = 70,
-            layoutMode = "combined", -- combined|separate
-            groupsPerRow = 2,
-            groupSpacing = 18,
-            autoScaleByRoster = true,
-            sizePresets = {
-                [5] = { width = 180, height = 24, spacing = 4, scale = 1.00, manaBarHeight = 3 },
-                [10] = { width = 170, height = 22, spacing = 3, scale = 0.96, manaBarHeight = 3 },
-                [25] = { width = 154, height = 20, spacing = 3, scale = 0.90, manaBarHeight = 2 },
-                [40] = { width = 140, height = 18, spacing = 2, scale = 0.84, manaBarHeight = 2 },
-            },
-            fakeMode = false,
-            fakeSize = 10,
-            fakeAnimate = true,
             showManaBar = true,
             manaBarHeight = 3,
             showStatusText = true,
             showHealComm = true,
             classColorNames = true,
-            alwaysFullAlphaText = false,
-            showTextBackdrop = true,
-            dispelPriority = { "Magic", "Curse", "Disease", "Poison" },
+            showHealthText = true,
             dispelColors = {
                 Magic = { 0.20, 0.60, 1.00 },
                 Curse = { 0.60, 0.00, 1.00 },
@@ -61,7 +38,9 @@ local function defaults()
             nameFontSize = 10,
             statusFontSize = 8,
             splitGroups = false,
-            groupPositions = {}, -- [1..8] = {x, y}
+            groupPositions = {},
+            bars = { width = 160, height = 20, spacing = 3, scale = 1, groupsPerRow = 4, groupSpacing = 12, nameLength = 10, shortenNames = true },
+            grid = { size = 40, columns = 5, spacing = 2, scale = 1, nameLength = 6, shortenNames = true },
         },
         scan = {
             excludeGeneral = true,
@@ -71,16 +50,8 @@ local function defaults()
             excludeUtility = true,
             dedupeByName = true,
         },
-        bindings = {
-            ["LeftButton"] = { type = "spell", value = "" },
-            ["RightButton"] = { type = "target", value = "" },
-            ["MiddleButton"] = { type = "menu", value = "" },
-            ["Shift-LeftButton"] = { type = "spell", value = "" },
-            ["Shift-RightButton"] = { type = "spell", value = "" },
-            ["Ctrl-LeftButton"] = { type = "spell", value = "" },
-        },
+        bindings = {},
         spellRoles = {},
-        groupAnchors = {},
     }
 end
 
@@ -102,22 +73,75 @@ local function copyMissing(dst, src)
     end
 end
 
+function Profiles:DeepCopy(src)
+    return deepCopy(src)
+end
+
+function Profiles:GetDefaults()
+    return defaults()
+end
+
 function Profiles:GetCharKey()
     return ns.state.charKey
 end
 
 function Profiles:GetProfileName()
-    return ns.state.profileName or self:GetCharKey()
+    return ns.state.profileName or "Default"
+end
+
+function Profiles:GetProfiles()
+    local list = {}
+    for name in pairs(PB_HF_DB.profiles) do
+        table.insert(list, name)
+    end
+    table.sort(list)
+    return list
+end
+
+function Profiles:SetProfile(name)
+    if not PB_HF_DB.profiles[name] then return end
+    PB_HF_DB.profileKeys[self:GetCharKey()] = name
+    ns.state.profileName = name
+    ns.DB = PB_HF_DB.profiles[name]
+    copyMissing(ns.DB, defaults())
+    
+    -- Refresh everything
+    if ns.Frames then ns.Frames:ApplyLayout() end
+    if ns.ClickCast then ns.ClickCast:RefreshAll() end
+    if ns.Roster then ns.Roster:Refresh() end
+end
+
+function Profiles:CreateProfile(name, copyFrom)
+    if not name or name == "" or PB_HF_DB.profiles[name] then return end
+    if copyFrom and PB_HF_DB.profiles[copyFrom] then
+        PB_HF_DB.profiles[name] = deepCopy(PB_HF_DB.profiles[copyFrom])
+    else
+        PB_HF_DB.profiles[name] = deepCopy(defaults())
+    end
+    self:SetProfile(name)
+end
+
+function Profiles:DeleteProfile(name)
+    if name == "Default" or name == self:GetProfileName() then return end
+    PB_HF_DB.profiles[name] = nil
+    -- Clean up profile keys
+    for key, pName in pairs(PB_HF_DB.profileKeys) do
+        if pName == name then
+            PB_HF_DB.profileKeys[key] = "Default"
+        end
+    end
 end
 
 function Profiles:ResetCurrentProfile()
     local name = self:GetProfileName()
     PB_HF_DB.profiles[name] = deepCopy(defaults())
     ns.DB = PB_HF_DB.profiles[name]
-    copyMissing(ns.DB, defaults())
+    
+    if ns.Frames then ns.Frames:ApplyLayout() end
+    if ns.ClickCast then ns.ClickCast:RefreshAll() end
+    if ns.Roster then ns.Roster:Refresh() end
 end
 
 function Profiles:OnInitialize()
     copyMissing(ns.DB, defaults())
-    if not ns.DB.activeProfile then ns.DB.activeProfile = self:GetProfileName() end
 end

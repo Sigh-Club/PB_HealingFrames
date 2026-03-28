@@ -65,9 +65,18 @@ local function EnsureSaved()
     local name = UnitName("player")
     local realm = GetRealmName()
     local key = (name and realm) and (name.." - "..realm) or "Default"
+    ns.state.charKey = key
     
     local profileName = PB_HF_DB.profileKeys[key] or "Default"
-    PB_HF_DB.profiles[profileName] = PB_HF_DB.profiles[profileName] or {}
+    ns.state.profileName = profileName
+    
+    if not PB_HF_DB.profiles[profileName] then
+        if ns.Profiles and ns.Profiles.GetDefaults then
+            PB_HF_DB.profiles[profileName] = ns.Profiles:GetDefaults()
+        else
+            PB_HF_DB.profiles[profileName] = {}
+        end
+    end
     ns.DB = PB_HF_DB.profiles[profileName]
     
     -- Structure Setup
@@ -119,7 +128,7 @@ local function Bootstrap()
     ns:IterModules("OnInitialize")
     ns:IterModules("OnEnable")
     local status = ns.DB.enabled and "" or " (|cffff4444Disabled|r)"
-    ns:Print("V 1.2.2 beta loaded. Type /pb for config." .. status)
+    ns:Print("V 1.3.0 beta loaded. Type /pb for config." .. status)
 end
 
 local frame = CreateFrame("Frame")
