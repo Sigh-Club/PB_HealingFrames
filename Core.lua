@@ -119,7 +119,7 @@ local function Bootstrap()
     ns:IterModules("OnInitialize")
     ns:IterModules("OnEnable")
     local status = ns.DB.enabled and "" or " (|cffff4444Disabled|r)"
-    ns:Print("V 1.1 beta loaded. Type /pb for config." .. status)
+    ns:Print("V 1.2 beta loaded. Type /pb for config." .. status)
 end
 
 local frame = CreateFrame("Frame")

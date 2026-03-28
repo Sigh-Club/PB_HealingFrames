@@ -121,9 +121,14 @@ function UI:CreateMainWindow()
     
     frame:Hide()
 
+    local icon = frame:CreateTexture(nil, "OVERLAY")
+    icon:SetSize(32, 32)
+    icon:SetPoint("TOPLEFT", 8, -8)
+    icon:SetTexture("Interface\\AddOns\\PB_HealingFrames\\Media\\MekTownChoppaz.tga")
+
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", 12, -12)
-    title:SetText("PB: Healing Frames V 1.1 beta")
+    title:SetPoint("LEFT", icon, "RIGHT", 8, 0)
+    title:SetText("PB: Healing Frames V 1.2 beta")
 
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -2, -2)
