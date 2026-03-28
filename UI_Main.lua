@@ -124,9 +124,14 @@ function UI:CreateMainWindow()
     
     frame:Hide()
 
+    local icon = frame:CreateTexture(nil, "OVERLAY")
+    icon:SetSize(48, 48)
+    icon:SetPoint("TOPLEFT", 10, -5)
+    icon:SetTexture("Interface\\AddOns\\PB_HealingFrames\\Media\\MTCIcon.tga")
+
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOP", 0, -12)
-    title:SetText("PB: Healing Frames V 1.2 beta")
+    title:SetText("PB: Healing Frames V 1.2.1 beta")
 
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -2, -2)
@@ -437,7 +442,7 @@ local function CreateSpellPicker()
     if spellPickerFrame then return spellPickerFrame end
     
     local f = CreateFrame("Frame", "PB_SpellPicker", UIParent)
-    f:SetSize(250, 300)
+    f:SetSize(350, 400) -- Made larger for categories
     f:SetPoint("CENTER")
     f:SetFrameStrata("DIALOG")
     f:Hide()
@@ -454,12 +459,31 @@ local function CreateSpellPicker()
     title:SetText("Select Spell")
     f.title = title
     
+    -- Category Buttons
+    local categories = { "All", "Healing", "Support", "Buffs", "Cleanse", "Res" }
+    f.catButtons = {}
+    for i, cat in ipairs(categories) do
+        local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+        b:SetSize(55, 20)
+        b:SetPoint("TOPLEFT", 10 + (i-1)*56, -35)
+        b:SetText(cat)
+        b:SetScript("OnClick", function()
+            f.currentCategory = cat
+            f:UpdateSpellList(f.editbox:GetText():lower())
+            for _, btn in ipairs(f.catButtons) do btn:UnlockHighlight() end
+            b:LockHighlight()
+        end)
+        f.catButtons[i] = b
+    end
+    f.currentCategory = "All"
+    f.catButtons[1]:LockHighlight()
+
     local filterLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    filterLabel:SetPoint("TOPLEFT", 10, -30)
+    filterLabel:SetPoint("TOPLEFT", 10, -65)
     filterLabel:SetText("Filter:")
     
     local editbox = CreateFrame("EditBox", nil, f)
-    editbox:SetSize(180, 20)
+    editbox:SetSize(200, 20)
     editbox:SetPoint("LEFT", filterLabel, "RIGHT", 5, 0)
     editbox:SetFontObject("ChatFontNormal")
     editbox:SetText("")
@@ -467,11 +491,11 @@ local function CreateSpellPicker()
     f.editbox = editbox
     
     local scroll = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT", 10, -60)
+    scroll:SetPoint("TOPLEFT", 10, -90)
     scroll:SetPoint("BOTTOMRIGHT", -10, 40)
     
     local child = CreateFrame("Frame", nil, scroll)
-    child:SetSize(210, 1000)
+    child:SetSize(310, 1000)
     scroll:SetScrollChild(child)
     f.scrollChild = child
     f.scroll = scroll
@@ -525,20 +549,34 @@ local function CreateSpellPicker()
     f.UpdateSpellList = function(self, filter)
         local child = self.scrollChild
         local bindable = (ns.SpellBook and ns.SpellBook.GetBindable and ns.SpellBook:GetBindable()) or {}
+        local intel = ns.HealingIntel or {}
         
         for _, btn in ipairs(self.buttons) do btn:Hide() end
         
         local count = 0
         local y = 0
+        local cat = self.currentCategory
         
         for i, spell in ipairs(bindable) do
             local name = spell.name:lower()
-            if filter == "" or name:find(filter, 1, true) then
+            local role = spell.role
+            
+            local inCat = (cat == "All")
+            if not inCat then
+                if cat == "Healing" and intel.healingRoles and intel.healingRoles[role] then inCat = true
+                elseif cat == "Support" and intel.supportRoles and intel.supportRoles[role] then inCat = true
+                elseif cat == "Buffs" and role == "buff" then inCat = true
+                elseif cat == "Cleanse" and role == "cleanse" then inCat = true
+                elseif cat == "Res" and role == "resurrection" then inCat = true
+                end
+            end
+
+            if inCat and (filter == "" or name:find(filter, 1, true)) then
                 count = count + 1
                 local btn = self.buttons[count]
                 if not btn then
                     btn = CreateFrame("Button", nil, child, "UIPanelButtonTemplate")
-                    btn:SetSize(200, 22)
+                    btn:SetSize(300, 22)
                     btn:SetText("")
                     
                     local icon = btn:CreateTexture(nil, "OVERLAY")
@@ -569,7 +607,7 @@ local function CreateSpellPicker()
         if count == 0 then
             local nofit = child:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
             nofit:SetPoint("TOPLEFT", 5, 0)
-            nofit:SetText("No spells found. Run /scan first.")
+            nofit:SetText("No spells found in this category.")
         end
         
         child:SetHeight(math.max(y, 100))
