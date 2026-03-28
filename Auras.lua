@@ -9,11 +9,18 @@ local centerIds = {}
 local auraCache = {}
 local collectActiveAuras
 local fallbackTrackedAuras = {
-    topleft = { 774, 26982, 139, 61295, 61299, 53601, 33763 },
-    bottomleft = { 17, 48066, 47753, 552, 8936 },
-    topright = { 33076, 974, 53563, 48438 },
+    topleft = {
+        774, 26982, 139, 61295, 61299, 53601, 33763,
+        "Renew", "Rejuvenation", "Lifebloom", "Wild Growth", "Prayer of Mending",
+        "Renewing Mist", "Enveloping Mist", "Soothing Mist", "Chi Wave", "Chi Burst",
+        "Healing Rain", "Healing Stream Totem", "Cloudburst Totem", "Flourishing Tranquility",
+        "Renewing Light", "Rejuvenating Swiftness", "Cauterizing Flames", "Cauterizing Fire",
+        "Glimmer of Light", "Beacon of Virtue", "Blessed Recovery"
+    },
+    bottomleft = { 17, 48066, 47753, 552, 8936, "Shields of Dominance", "Dominant Word: Shield" },
+    topright = { 33076, 974, 53563, 48438, "Sheath of Light", "Improved Power Word: Shield", "Borrowed Time" },
     bottomright = { 2893, 6346, 33206, 47788 },
-    center = { 53563, 974 },
+    center = { 53563, 974, "Beacon of Light", "Beacon of Virtue" },
 }
 
 local function addHotEntry(entry, priority)

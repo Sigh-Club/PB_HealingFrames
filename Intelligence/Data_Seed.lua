@@ -15,7 +15,7 @@ HI.design_principles = {
 
 HI.roleSpellIds = {
     direct_heal = { 2050, 2054, 2060, 2061, 635, 19750, 331, 8004, 8005, 5185, 8936, 50464, 1064, 596, 34861, 48785 },
-    hot = { 139, 774, 33763, 48438, 61295, 33076, 115151, 124682, 124081, 116670, 73920, 61295, 52042 },
+    hot = { 139, 774, 33763, 48438, 61295, 33076, 115151, 124682, 124081, 115098, 123586, 73920, 52042 },
     shield_absorb = { 17, 47515, 53563, 53601, 974 },
     cleanse = { 4987, 527, 528, 552, 475, 2782, 2893, 8946, 51886 },
     resurrection = { 2006, 7328, 50769, 20484, 20773 },
@@ -50,10 +50,14 @@ HI.roleSpellNames = {
     hot = {
         "Renew", "Rejuvenation", "Lifebloom", "Wild Growth", "Riptide", "Prayer of Mending",
         "Renewing Mist", "Enveloping Mist", "Soothing Mist", "Chi Wave", "Chi Burst",
-        "Healing Rain", "Healing Stream Totem", "Cloudburst Totem"
+        "Healing Rain", "Healing Stream Totem", "Cloudburst Totem", "Flourishing Tranquility",
+        "Renewing Light", "Rejuvenating Swiftness", "Cauterizing Flames", "Cauterizing Fire",
+        "Glimmer of Light", "Beacon of Virtue", "Blessed Recovery"
     },
     shield_absorb = {
-        "Power Word: Shield", "Sacred Shield", "Earth Shield", "Divine Aegis", "Beacon of Light"
+        "Power Word: Shield", "Sacred Shield", "Earth Shield", "Divine Aegis", "Beacon of Light",
+        "Shields of Dominance", "Dominant Word: Shield", "Sheath of Light", "Improved Power Word: Shield",
+        "Borrowed Time"
     },
     cleanse = {
         "Cleanse", "Purify", "Cure Disease", "Abolish Disease", "Remove Curse",

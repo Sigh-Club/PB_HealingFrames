@@ -68,10 +68,14 @@ local fallbackIntel = {
         hot = {
             "Renew", "Rejuvenation", "Lifebloom", "Wild Growth", "Riptide", "Prayer of Mending",
             "Renewing Mist", "Enveloping Mist", "Soothing Mist", "Chi Wave", "Chi Burst",
-            "Healing Rain", "Healing Stream Totem", "Cloudburst Totem"
+            "Healing Rain", "Healing Stream Totem", "Cloudburst Totem", "Flourishing Tranquility",
+            "Renewing Light", "Rejuvenating Swiftness", "Cauterizing Flames", "Cauterizing Fire",
+            "Glimmer of Light", "Beacon of Virtue", "Blessed Recovery"
         },
         shield_absorb = {
-            "Power Word: Shield", "Sacred Shield", "Earth Shield", "Divine Aegis", "Beacon of Light"
+            "Power Word: Shield", "Sacred Shield", "Earth Shield", "Divine Aegis", "Beacon of Light",
+            "Shields of Dominance", "Dominant Word: Shield", "Sheath of Light", "Improved Power Word: Shield",
+            "Borrowed Time"
         },
         cleanse = {
             "Cleanse", "Purify", "Cure Disease", "Abolish Disease", "Remove Curse",
