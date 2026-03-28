@@ -141,16 +141,16 @@ function UI:CreateMainWindow()
     CreateFrameBackdrop(content); content:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
     self.contentArea = content
 
-    -- Center Logo inside the Content Area (General Panel)
+    -- Main Content Area Logo (Centered)
     local wallpaper = content:CreateTexture(nil, "BACKGROUND", nil, -8)
     wallpaper:SetPoint("CENTER", 0, 0)
-    wallpaper:SetSize(400, 400) -- Large logo centered in the panel
+    wallpaper:SetSize(450, 450) -- Increased size
     wallpaper:SetTexture("Interface\\AddOns\\PB_HealingFrames\\Media\\MTCIcon.tga")
-    wallpaper:SetAlpha(0.65) -- Increased visibility for "advertisement" effect
+    wallpaper:SetAlpha(0.85) -- Higher visibility for advertisement
     
     local tint = content:CreateTexture(nil, "BACKGROUND", nil, -7)
     tint:SetAllPoints()
-    tint:SetTexture(0, 0, 0, 0.3) -- Lighter tint so logo is clearer
+    tint:SetTexture(0, 0, 0, 0.25) -- Lighter tint
     
     local tabList = { "General", "Layout", "Style", "Keybinds" }
     for i, name in ipairs(tabList) do
