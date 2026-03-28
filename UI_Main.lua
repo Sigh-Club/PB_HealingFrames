@@ -22,7 +22,7 @@ end
 
 local function mkSlider(parent, label, minv, maxv, step, getter, setter)
     local s = CreateFrame("Slider", "PB_HF_Slider"..math.random(1000,9999), parent, "OptionsSliderTemplate")
-    s:SetWidth(150); s:SetMinMaxValues(minv, maxv); s:SetValueStep(step)
+    s:SetWidth(180); s:SetMinMaxValues(minv, maxv); s:SetValueStep(step)
     if s.SetObeyStepOnDrag then s:SetObeyStepOnDrag(true) end
     
     local name = s:GetName()
@@ -66,9 +66,9 @@ end
 
 local function mkColorButton(parent, label, getter, setter)
     local btn = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    btn:SetSize(90, 24); btn:SetText(label)
+    btn:SetSize(100, 24); btn:SetText(label)
     btn.swatch = btn:CreateTexture(nil, "OVERLAY")
-    btn.swatch:SetSize(16, 16); btn.swatch:SetPoint("LEFT", btn, "RIGHT", 5, 0)
+    btn.swatch:SetSize(18, 18); btn.swatch:SetPoint("LEFT", btn, "RIGHT", 5, 0)
     
     local function updateSwatch()
         local c = getter()
@@ -101,8 +101,9 @@ end
 function UI:CreateMainWindow()
     if frame then return end
 
+    -- Increased overall frame size
     frame = CreateFrame("Frame", "PB_HealingFramesConfig", UIParent)
-    frame:SetSize(580, 420)
+    frame:SetSize(750, 550)
     frame:SetPoint("CENTER")
     frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", frame.StartMoving)
@@ -111,62 +112,68 @@ function UI:CreateMainWindow()
     CreateFrameBackdrop(frame)
     frame:SetBackdropColor(0, 0, 0, 0)
     
+    -- Centered wallpaper with correct 2:1 aspect ratio
     local wallpaper = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
     wallpaper:SetPoint("CENTER", 0, 0)
-    wallpaper:SetSize(580, 420)
+    wallpaper:SetSize(750, 375) -- 2:1 ratio for 1024x512
     wallpaper:SetTexture("Interface\\AddOns\\PB_HealingFrames\\MTCWallpaper.tga")
-    wallpaper:SetTexCoord(0, 1, 1, 0) -- Vertical Flip
+    wallpaper:SetTexCoord(0, 1, 1, 0) -- Vertical Flip fix
     wallpaper:SetAlpha(1.0)
     
     local tint = frame:CreateTexture(nil, "BACKGROUND", nil, -7)
     tint:SetAllPoints()
-    tint:SetTexture(0, 0, 0, 0.6)
+    tint:SetTexture(0, 0, 0, 0.65)
     
     frame:Hide()
 
+    -- Larger Header Icon
     local icon = frame:CreateTexture(nil, "OVERLAY")
-    icon:SetSize(48, 48)
-    icon:SetPoint("TOPLEFT", 10, -5)
+    icon:SetSize(64, 64)
+    icon:SetPoint("TOPLEFT", 15, -5)
     icon:SetTexture("Interface\\AddOns\\PB_HealingFrames\\Media\\MTCIcon.tga")
 
+    -- Larger, centered Header Title
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOP", 0, -12)
+    title:SetFont("Fonts\\FRIZQT__.TTF", 18, "OUTLINE")
+    title:SetPoint("LEFT", icon, "RIGHT", 15, 0)
     title:SetText("PB: Healing Frames V 1.2.1 beta")
 
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-    close:SetPoint("TOPRIGHT", -2, -2)
+    close:SetPoint("TOPRIGHT", -5, -5)
 
+    -- Larger Sidebar
     local sidebar = CreateFrame("Frame", nil, frame)
-    sidebar:SetSize(120, 380); sidebar:SetPoint("TOPLEFT", 10, -40)
+    sidebar:SetSize(160, 480); sidebar:SetPoint("TOPLEFT", 10, -60)
     CreateFrameBackdrop(sidebar); sidebar:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
 
-    -- Icon at bottom of sidebar
+    -- Sidebar Icon at bottom
     local sideIcon = sidebar:CreateTexture(nil, "BACKGROUND")
-    sideIcon:SetSize(110, 110)
-    sideIcon:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 5)
+    sideIcon:SetSize(140, 140)
+    sideIcon:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 10)
     sideIcon:SetTexture("Interface\\AddOns\\PB_HealingFrames\\Media\\MekTownChoppaz.tga")
-    sideIcon:SetAlpha(0.8)
+    sideIcon:SetAlpha(0.9)
 
+    -- Larger Content Area
     local content = CreateFrame("Frame", nil, frame)
-    content:SetSize(430, 380); content:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 10, 0)
+    content:SetSize(560, 480); content:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 10, 0)
     CreateFrameBackdrop(content); content:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
     self.contentArea = content
 
     local tabList = { "General", "Layout", "Style", "Keybinds" }
     for i, name in ipairs(tabList) do
         local btn = CreateFrame("Button", nil, sidebar, "UIPanelButtonTemplate")
-        btn:SetSize(100, 28); btn:SetPoint("TOP", 0, -10 - (i-1) * 32)
+        btn:SetSize(140, 32); btn:SetPoint("TOP", 0, -15 - (i-1) * 38)
         btn:SetText(name)
         btn:SetScript("OnClick", function() self:ShowTab(name) end)
         tabs[name] = btn
         
         local scroll = CreateFrame("ScrollFrame", "PB_HF_TabScroll"..name, content, "UIPanelScrollFrameTemplate")
-        scroll:SetPoint("TOPLEFT", 5, -5)
-        scroll:SetPoint("BOTTOMRIGHT", -25, 5)
+        scroll:SetPoint("TOPLEFT", 10, -10)
+        scroll:SetPoint("BOTTOMRIGHT", -30, 10)
         scroll:Hide()
         
         local child = CreateFrame("Frame", nil, scroll)
-        child:SetSize(400, 800)
+        child:SetSize(520, 1000)
         scroll:SetScrollChild(child)
         
         tabContent[name] = { scroll = scroll, child = child }
@@ -197,33 +204,33 @@ function UI:LoadGeneral(c)
     
     local title = c:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 15, y); title:SetText("General")
-    y = y - 30
+    y = y - 40
 
     local master = mkCheck(c, "Enable PB: Healing Frames", "Toggle the entire addon on or off.", 
         function() return ns.DB.enabled ~= false end, function(v) ns:SetEnabled(v) end)
-    master:SetPoint("TOPLEFT", 15, y); y = y - 30
+    master:SetPoint("TOPLEFT", 15, y); y = y - 35
 
     local lock = mkCheck(c, "Lock Position", "Lock the frame position.", 
         function() return ns.DB.locked end, function(v) ns.DB.locked = v end)
-    lock:SetPoint("TOPLEFT", 15, y); y = y - 30
+    lock:SetPoint("TOPLEFT", 15, y); y = y - 35
 
     local reset = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    reset:SetSize(120, 24); reset:SetPoint("TOPLEFT", 15, y); reset:SetText("Reset Profile")
+    reset:SetSize(140, 26); reset:SetPoint("TOPLEFT", 15, y); reset:SetText("Reset Profile")
     reset:SetScript("OnClick", function()
         if ns.Profiles and ns.Profiles.ResetCurrentProfile then
             ns.Profiles:ResetCurrentProfile()
             ReloadUI()
         end
-    end); y = y - 30
+    end); y = y - 35
 
     local scan = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    scan:SetSize(120, 24); scan:SetPoint("TOPLEFT", 15, y); scan:SetText("Scan Spells")
-    scan:SetScript("OnClick", function() ns.SpellBook:Scan() end); y = y - 30
+    scan:SetSize(140, 26); scan:SetPoint("TOPLEFT", 15, y); scan:SetText("Scan Spells")
+    scan:SetScript("OnClick", function() ns.SpellBook:Scan() end); y = y - 35
     
     local test = mkCheck(c, "Test Mode", "Show fake frames for setup.", 
         function() return ns.DB.frame.fakeMode end, 
         function(v) if ns.Roster then ns.Roster:SetFakeMode(v, ns.DB.frame.fakeSize or 10) end end)
-    test:SetPoint("TOPLEFT", 15, y); y = y - 30
+    test:SetPoint("TOPLEFT", 15, y); y = y - 35
 
     c.fakeSize = mkSlider(c, "Test Units", 5, 40, 1, 
         function() return ns.DB.frame.fakeSize or 10 end, 
@@ -233,16 +240,16 @@ function UI:LoadGeneral(c)
                 ns.Roster:SetFakeMode(true, v) 
             end 
         end)
-    c.fakeSize:SetPoint("TOPLEFT", 15, y); y = y - 40
+    c.fakeSize:SetPoint("TOPLEFT", 15, y); y = y - 50
 
     local th1 = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    th1:SetPoint("TOPLEFT", 15, y); th1:SetText("--- Health Thresholds ---"); y = y - 25
+    th1:SetPoint("TOPLEFT", 15, y); th1:SetText("--- Health Thresholds ---"); y = y - 30
 
     c.critThresh = mkSlider(c, "Critical %", 10, 50, 5, function() return ns.DB.frame.criticalThreshold or 35 end, function(v) ns.DB.frame.criticalThreshold = v end)
-    c.critThresh:SetPoint("TOPLEFT", 15, y); y = y - 40
+    c.critThresh:SetPoint("TOPLEFT", 15, y); y = y - 50
 
     c.injThresh = mkSlider(c, "Injured %", 50, 90, 5, function() return ns.DB.frame.injuredThreshold or 70 end, function(v) ns.DB.frame.injuredThreshold = v end)
-    c.injThresh:SetPoint("TOPLEFT", 15, y); y = y - 40
+    c.injThresh:SetPoint("TOPLEFT", 15, y); y = y - 50
 
     c.outRange = mkSlider(c, "OOR Alpha", 0.1, 0.8, 0.05, function() return ns.DB.frame.outOfRangeAlpha or 0.35 end, function(v) ns.DB.frame.outOfRangeAlpha = v end)
     c.outRange:SetPoint("TOPLEFT", 15, y)
@@ -259,12 +266,12 @@ function UI:LoadLayout(c)
     
     local title = c:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 15, y); title:SetText("Layout Mode")
-    y = y - 30
+    y = y - 40
 
     local mode = mkCheck(c, "Grid Mode (Squares)", "Switch to square grid layout.", 
         function() return ns.DB.frame.layoutStyle == "grid" end, 
         function(v) ns.DB.frame.layoutStyle = v and "grid" or "bars"; self:UpdateLayoutVisibility(c) end)
-    mode:SetPoint("TOPLEFT", 15, y); y = y - 30
+    mode:SetPoint("TOPLEFT", 15, y); y = y - 35
 
     local split = mkCheck(c, "Split Group Anchors", "Allow moving each raid group independently.", 
         function() return ns.DB.frame.splitGroups end, function(v) ns.DB.frame.splitGroups = v; if ns.Frames then ns.Frames:ApplyLayout() end end)
@@ -272,48 +279,48 @@ function UI:LoadLayout(c)
     c.splitCheck = split
 
     local resetPos = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    resetPos:SetSize(120, 24); resetPos:SetPoint("LEFT", split, "RIGHT", 150, 0); resetPos:SetText("Reset Anchors")
+    resetPos:SetSize(140, 26); resetPos:SetPoint("LEFT", split, "RIGHT", 180, 0); resetPos:SetText("Reset Anchors")
     resetPos:SetScript("OnClick", function() if ns.Frames and ns.Frames.ResetAnchorPositions then ns.Frames:ResetAnchorPositions() end end)
 
-    y = y - 35
+    y = y - 45
 
     local barHeader = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     barHeader:SetPoint("TOPLEFT", 15, y); barHeader:SetText("--- Bar Mode Settings ---")
     c.barHeader = barHeader
 
     c.bScale = mkSlider(c, "Scale", 0.5, 2.0, 0.05, function() return ns.DB.frame.bars.scale or 1 end, function(v) ns.DB.frame.bars.scale = v end)
-    c.bScale:SetPoint("TOPLEFT", 15, y - 25); c.bScale:SetWidth(120)
+    c.bScale:SetPoint("TOPLEFT", 15, y - 35); c.bScale:SetWidth(150)
 
-    c.bWidth = mkSlider(c, "Width", 40, 300, 2, function() return ns.DB.frame.bars.width or 180 end, function(v) ns.DB.frame.bars.width = v end)
-    c.bWidth:SetPoint("TOPLEFT", 200, y - 25); c.bWidth:SetWidth(120); y = y - 55
+    c.bWidth = mkSlider(c, "Width", 40, 350, 2, function() return ns.DB.frame.bars.width or 180 end, function(v) ns.DB.frame.bars.width = v end)
+    c.bWidth:SetPoint("TOPLEFT", 250, y - 35); c.bWidth:SetWidth(150); y = y - 75
 
-    c.bHeight = mkSlider(c, "Height", 10, 80, 1, function() return ns.DB.frame.bars.height or 22 end, function(v) ns.DB.frame.bars.height = v end)
-    c.bHeight:SetPoint("TOPLEFT", 15, y); c.bHeight:SetWidth(120)
+    c.bHeight = mkSlider(c, "Height", 10, 100, 1, function() return ns.DB.frame.bars.height or 22 end, function(v) ns.DB.frame.bars.height = v end)
+    c.bHeight:SetPoint("TOPLEFT", 15, y); c.bHeight:SetWidth(150)
 
-    c.bSpacing = mkSlider(c, "Spacing", 0, 20, 1, function() return ns.DB.frame.bars.spacing or 4 end, function(v) ns.DB.frame.bars.spacing = v end)
-    c.bSpacing:SetPoint("TOPLEFT", 200, y); c.bSpacing:SetWidth(120); y = y - 40
+    c.bSpacing = mkSlider(c, "Spacing", 0, 30, 1, function() return ns.DB.frame.bars.spacing or 4 end, function(v) ns.DB.frame.bars.spacing = v end)
+    c.bSpacing:SetPoint("TOPLEFT", 250, y); c.bSpacing:SetWidth(150); y = y - 55
 
-    c.bCols = mkSlider(c, "Groups/Row", 1, 8, 1, function() return ns.DB.frame.bars.groupsPerRow or 2 end, function(v) ns.DB.frame.bars.groupsPerRow = v end)
-    c.bCols:SetPoint("TOPLEFT", 15, y); c.bCols:SetWidth(120)
+    c.bCols = mkSlider(c, "Groups/Row", 1, 8, 1, function() return ns.DB.frame.bars.groupsPerRow or 4 end, function(v) ns.DB.frame.bars.groupsPerRow = v end)
+    c.bCols:SetPoint("TOPLEFT", 15, y); c.bCols:SetWidth(150)
 
-    c.bGroupSp = mkSlider(c, "Group Gap", 5, 40, 1, function() return ns.DB.frame.bars.groupSpacing or 18 end, function(v) ns.DB.frame.bars.groupSpacing = v end)
-    c.bGroupSp:SetPoint("TOPLEFT", 200, y); c.bGroupSp:SetWidth(120); y = y - 40
+    c.bGroupSp = mkSlider(c, "Group Gap", 5, 60, 1, function() return ns.DB.frame.bars.groupSpacing or 18 end, function(v) ns.DB.frame.bars.groupSpacing = v end)
+    c.bGroupSp:SetPoint("TOPLEFT", 250, y); c.bGroupSp:SetWidth(150); y = y - 55
 
     local gridHeader = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     gridHeader:SetPoint("TOPLEFT", 15, y); gridHeader:SetText("--- Grid Mode Settings ---")
     c.gridHeader = gridHeader
 
     c.gScale = mkSlider(c, "Scale", 0.5, 2.0, 0.05, function() return ns.DB.frame.grid.scale or 1 end, function(v) ns.DB.frame.grid.scale = v end)
-    c.gScale:SetPoint("TOPLEFT", 15, y - 25); c.gScale:SetWidth(120)
+    c.gScale:SetPoint("TOPLEFT", 15, y - 35); c.gScale:SetWidth(150)
 
-    c.gSize = mkSlider(c, "Size", 20, 100, 1, function() return ns.DB.frame.grid.size or 40 end, function(v) ns.DB.frame.grid.size = v end)
-    c.gSize:SetPoint("TOPLEFT", 200, y - 25); c.gSize:SetWidth(120); y = y - 55
+    c.gSize = mkSlider(c, "Size", 20, 150, 1, function() return ns.DB.frame.grid.size or 40 end, function(v) ns.DB.frame.grid.size = v end)
+    c.gSize:SetPoint("TOPLEFT", 250, y - 35); c.gSize:SetWidth(150); y = y - 75
 
-    c.gCols = mkSlider(c, "Columns", 1, 10, 1, function() return ns.DB.frame.grid.columns or 5 end, function(v) ns.DB.frame.grid.columns = v end)
-    c.gCols:SetPoint("TOPLEFT", 15, y); c.gCols:SetWidth(120)
+    c.gCols = mkSlider(c, "Columns", 1, 15, 1, function() return ns.DB.frame.grid.columns or 5 end, function(v) ns.DB.frame.grid.columns = v end)
+    c.gCols:SetPoint("TOPLEFT", 15, y); c.gCols:SetWidth(150)
 
-    c.gSpacing = mkSlider(c, "Spacing", 0, 20, 1, function() return ns.DB.frame.grid.spacing or 2 end, function(v) ns.DB.frame.grid.spacing = v end)
-    c.gSpacing:SetPoint("TOPLEFT", 200, y)
+    c.gSpacing = mkSlider(c, "Spacing", 0, 30, 1, function() return ns.DB.frame.grid.spacing or 2 end, function(v) ns.DB.frame.grid.spacing = v end)
+    c.gSpacing:SetPoint("TOPLEFT", 250, y); c.gSpacing:SetWidth(150)
 
     mode:HookScript("OnClick", function() self:UpdateLayoutVisibility(c) end)
     self:UpdateLayoutVisibility(c)
@@ -336,60 +343,60 @@ function UI:LoadStyle(c)
     
     local title = c:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 15, y); title:SetText("Visual Style")
-    y = y - 30
+    y = y - 40
 
     local th1 = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    th1:SetPoint("TOPLEFT", 15, y); th1:SetText("--- Health Colors ---"); y = y - 25
+    th1:SetPoint("TOPLEFT", 15, y); th1:SetText("--- Health Colors ---"); y = y - 35
 
     mkColorButton(c, "Healthy", function() return ns.DB.frame.healthyColor or {0.15, 0.78, 0.22} end, function(v) ns.DB.frame.healthyColor = v end):SetPoint("TOPLEFT", 15, y)
-    mkColorButton(c, "Injured", function() return ns.DB.frame.injuredColor or {0.95, 0.82, 0.20} end, function(v) ns.DB.frame.injuredColor = v end):SetPoint("TOPLEFT", 115, y)
-    mkColorButton(c, "Critical", function() return ns.DB.frame.criticalColor or {0.95, 0.15, 0.15} end, function(v) ns.DB.frame.criticalColor = v end):SetPoint("TOPLEFT", 215, y); y = y - 30
+    mkColorButton(c, "Injured", function() return ns.DB.frame.injuredColor or {0.95, 0.82, 0.20} end, function(v) ns.DB.frame.injuredColor = v end):SetPoint("TOPLEFT", 125, y)
+    mkColorButton(c, "Critical", function() return ns.DB.frame.criticalColor or {0.95, 0.15, 0.15} end, function(v) ns.DB.frame.criticalColor = v end):SetPoint("TOPLEFT", 235, y); y = y - 40
 
     local th1b = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    th1b:SetPoint("TOPLEFT", 15, y); th1b:SetText("--- Dispel Colors ---"); y = y - 25
+    th1b:SetPoint("TOPLEFT", 15, y); th1b:SetText("--- Dispel Colors ---"); y = y - 35
 
     mkColorButton(c, "Magic", function() return ns.DB.frame.dispelColors.Magic or {0.2, 0.6, 1} end, function(v) ns.DB.frame.dispelColors.Magic = v end):SetPoint("TOPLEFT", 15, y)
-    mkColorButton(c, "Curse", function() return ns.DB.frame.dispelColors.Curse or {0.6, 0, 1} end, function(v) ns.DB.frame.dispelColors.Curse = v end):SetPoint("TOPLEFT", 115, y)
-    mkColorButton(c, "Poison", function() return ns.DB.frame.dispelColors.Poison or {0, 0.6, 0} end, function(v) ns.DB.frame.dispelColors.Poison = v end):SetPoint("TOPLEFT", 215, y)
-    mkColorButton(c, "Disease", function() return ns.DB.frame.dispelColors.Disease or {0.6, 0.4, 0} end, function(v) ns.DB.frame.dispelColors.Disease = v end):SetPoint("TOPLEFT", 315, y); y = y - 35
+    mkColorButton(c, "Curse", function() return ns.DB.frame.dispelColors.Curse or {0.6, 0, 1} end, function(v) ns.DB.frame.dispelColors.Curse = v end):SetPoint("TOPLEFT", 125, y)
+    mkColorButton(c, "Poison", function() return ns.DB.frame.dispelColors.Poison or {0, 0.6, 0} end, function(v) ns.DB.frame.dispelColors.Poison = v end):SetPoint("TOPLEFT", 235, y)
+    mkColorButton(c, "Disease", function() return ns.DB.frame.dispelColors.Disease or {0.6, 0.4, 0} end, function(v) ns.DB.frame.dispelColors.Disease = v end):SetPoint("TOPLEFT", 345, y); y = y - 45
 
     local th2 = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    th2:SetPoint("TOPLEFT", 15, y); th2:SetText("--- Display Options ---"); y = y - 25
+    th2:SetPoint("TOPLEFT", 15, y); th2:SetText("--- Display Options ---"); y = y - 30
 
     mkCheck(c, "Highlight Debuffs", "Color bar for curable debuffs.", 
-        function() return ns.DB.frame.highlightCurableDebuffs ~= false end, function(v) ns.DB.frame.highlightCurableDebuffs = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.highlightCurableDebuffs ~= false end, function(v) ns.DB.frame.highlightCurableDebuffs = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Show Mana Bar", "Display mana/power bar.", 
-        function() return ns.DB.frame.showManaBar ~= false end, function(v) ns.DB.frame.showManaBar = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.showManaBar ~= false end, function(v) ns.DB.frame.showManaBar = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Health %", "Display health percentage.", 
-        function() return ns.DB.frame.showHealthText ~= false end, function(v) ns.DB.frame.showHealthText = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.showHealthText ~= false end, function(v) ns.DB.frame.showHealthText = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Status Text", "Display DEAD/AFK/etc.", 
-        function() return ns.DB.frame.showStatusText ~= false end, function(v) ns.DB.frame.showStatusText = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.showStatusText ~= false end, function(v) ns.DB.frame.showStatusText = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Class Colors", "Use class colors for names.", 
-        function() return ns.DB.frame.classColorNames ~= false end, function(v) ns.DB.frame.classColorNames = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.classColorNames ~= false end, function(v) ns.DB.frame.classColorNames = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Heal Comm", "Show incoming heal predictions.", 
-        function() return ns.DB.frame.showHealComm ~= false end, function(v) ns.DB.frame.showHealComm = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.showHealComm ~= false end, function(v) ns.DB.frame.showHealComm = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Use Class Colors", "Use class colors for the health bars.", 
-        function() return ns.DB.frame.useClassColors end, function(v) ns.DB.frame.useClassColors = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.useClassColors end, function(v) ns.DB.frame.useClassColors = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Aggro Border", "Show red border when unit has aggro.", 
-        function() return ns.DB.frame.showAggroBorder ~= false end, function(v) ns.DB.frame.showAggroBorder = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.showAggroBorder ~= false end, function(v) ns.DB.frame.showAggroBorder = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Target Glow", "Show white border on current target.", 
-        function() return ns.DB.frame.showTargetGlow ~= false end, function(v) ns.DB.frame.showTargetGlow = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.showTargetGlow ~= false end, function(v) ns.DB.frame.showTargetGlow = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Show Deficit", "Show -HP instead of % when injured.", 
-        function() return ns.DB.frame.showDeficit ~= false end, function(v) ns.DB.frame.showDeficit = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.showDeficit ~= false end, function(v) ns.DB.frame.showDeficit = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
     mkCheck(c, "Inverted (Deficit)", "Show health deficit instead of full bar.", 
-        function() return ns.DB.frame.invertedColors end, function(v) ns.DB.frame.invertedColors = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.invertedColors end, function(v) ns.DB.frame.invertedColors = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
 
-    mkColorButton(c, "Hover Color", function() return ns.DB.frame.hoverColor or {1, 1, 1, 0.15} end, function(v) ns.DB.frame.hoverColor = v end):SetPoint("TOPLEFT", 15, y); y = y - 35
+    mkColorButton(c, "Hover Color", function() return ns.DB.frame.hoverColor or {1, 1, 1, 0.15} end, function(v) ns.DB.frame.hoverColor = v end):SetPoint("TOPLEFT", 15, y); y = y - 40
 
     local textures = {
         { name = "Classic", path = "Interface\\TargetingFrame\\UI-StatusBar" },
@@ -403,34 +410,34 @@ function UI:LoadStyle(c)
     
     for i, t in ipairs(textures) do
         local btn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-        btn:SetSize(75, 20)
-        btn:SetPoint("TOPLEFT", 70 + (i-1)*80, y)
+        btn:SetSize(85, 22)
+        btn:SetPoint("TOPLEFT", 80 + (i-1)*90, y)
         btn:SetText(t.name)
         btn:SetScript("OnClick", function()
             ns.DB.frame.barTexture = t.path
             if ns.Frames then ns.Frames:ApplyLayout() end
         end)
     end
-    y = y - 35
+    y = y - 40
 
     mkCheck(c, "Aura Timers", "Show cooldown timers on auras.", 
-        function() return ns.DB.frame.showAuraTimers ~= false end, function(v) ns.DB.frame.showAuraTimers = v end):SetPoint("TOPLEFT", 15, y); y = y - 35
+        function() return ns.DB.frame.showAuraTimers ~= false end, function(v) ns.DB.frame.showAuraTimers = v end):SetPoint("TOPLEFT", 15, y); y = y - 40
 
     local th3 = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    th3:SetPoint("TOPLEFT", 15, y); th3:SetText("--- Name Options ---"); y = y - 25
+    th3:SetPoint("TOPLEFT", 15, y); th3:SetText("--- Name Options ---"); y = y - 30
 
     mkCheck(c, "Shorten Names", "Truncate long names.", 
-        function() return ns.DB.frame.bars.shortenNames end, function(v) ns.DB.frame.bars.shortenNames = v end):SetPoint("TOPLEFT", 15, y); y = y - 28
+        function() return ns.DB.frame.bars.shortenNames end, function(v) ns.DB.frame.bars.shortenNames = v end):SetPoint("TOPLEFT", 15, y); y = y - 32
     mkCheck(c, "Shorten Grid Names", "Truncate long names in grid.", 
-        function() return ns.DB.frame.grid.shortenNames end, function(v) ns.DB.frame.grid.shortenNames = v end):SetPoint("TOPLEFT", 15, y); y = y - 40
+        function() return ns.DB.frame.grid.shortenNames end, function(v) ns.DB.frame.grid.shortenNames = v end):SetPoint("TOPLEFT", 15, y); y = y - 45
 
-    c.nameFS = mkSlider(c, "Name Font Size", 6, 20, 1, function() return ns.DB.frame.nameFontSize or 10 end, function(v) ns.DB.frame.nameFontSize = v end)
-    c.nameFS:SetPoint("TOPLEFT", 15, y); y = y - 40
+    c.nameFS = mkSlider(c, "Name Font Size", 6, 24, 1, function() return ns.DB.frame.nameFontSize or 10 end, function(v) ns.DB.frame.nameFontSize = v end)
+    c.nameFS:SetPoint("TOPLEFT", 15, y); y = y - 50
 
-    c.statusFS = mkSlider(c, "Status Font Size", 6, 20, 1, function() return ns.DB.frame.statusFontSize or 8 end, function(v) ns.DB.frame.statusFontSize = v end)
-    c.statusFS:SetPoint("TOPLEFT", 15, y); y = y - 40
+    c.statusFS = mkSlider(c, "Status Font Size", 6, 24, 1, function() return ns.DB.frame.statusFontSize or 8 end, function(v) ns.DB.frame.statusFontSize = v end)
+    c.statusFS:SetPoint("TOPLEFT", 15, y); y = y - 50
 
-    c.manaH = mkSlider(c, "Mana Height", 0, 8, 1, function() return ns.DB.frame.manaBarHeight or 3 end, function(v) ns.DB.frame.manaBarHeight = v end)
+    c.manaH = mkSlider(c, "Mana Height", 0, 12, 1, function() return ns.DB.frame.manaBarHeight or 3 end, function(v) ns.DB.frame.manaBarHeight = v end)
     c.manaH:SetPoint("TOPLEFT", 15, y)
 
     c.loaded = true
@@ -442,7 +449,7 @@ local function CreateSpellPicker()
     if spellPickerFrame then return spellPickerFrame end
     
     local f = CreateFrame("Frame", "PB_SpellPicker", UIParent)
-    f:SetSize(350, 400) -- Made larger for categories
+    f:SetSize(400, 450)
     f:SetPoint("CENTER")
     f:SetFrameStrata("DIALOG")
     f:Hide()
@@ -455,17 +462,16 @@ local function CreateSpellPicker()
     f:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
     
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    title:SetPoint("TOPLEFT", 10, -10)
+    title:SetPoint("TOPLEFT", 15, -15)
     title:SetText("Select Spell")
     f.title = title
     
-    -- Category Buttons
     local categories = { "All", "Healing", "Support", "Buffs", "Cleanse", "Res" }
     f.catButtons = {}
     for i, cat in ipairs(categories) do
         local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-        b:SetSize(55, 20)
-        b:SetPoint("TOPLEFT", 10 + (i-1)*56, -35)
+        b:SetSize(60, 22)
+        b:SetPoint("TOPLEFT", 15 + (i-1)*62, -45)
         b:SetText(cat)
         b:SetScript("OnClick", function()
             f.currentCategory = cat
@@ -479,23 +485,23 @@ local function CreateSpellPicker()
     f.catButtons[1]:LockHighlight()
 
     local filterLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    filterLabel:SetPoint("TOPLEFT", 10, -65)
+    filterLabel:SetPoint("TOPLEFT", 15, -80)
     filterLabel:SetText("Filter:")
     
     local editbox = CreateFrame("EditBox", nil, f)
-    editbox:SetSize(200, 20)
-    editbox:SetPoint("LEFT", filterLabel, "RIGHT", 5, 0)
+    editbox:SetSize(220, 22)
+    editbox:SetPoint("LEFT", filterLabel, "RIGHT", 8, 0)
     editbox:SetFontObject("ChatFontNormal")
     editbox:SetText("")
     editbox:SetAutoFocus(false)
     f.editbox = editbox
     
     local scroll = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT", 10, -90)
-    scroll:SetPoint("BOTTOMRIGHT", -10, 40)
+    scroll:SetPoint("TOPLEFT", 15, -110)
+    scroll:SetPoint("BOTTOMRIGHT", -35, 45)
     
     local child = CreateFrame("Frame", nil, scroll)
-    child:SetSize(310, 1000)
+    child:SetSize(340, 1000)
     scroll:SetScrollChild(child)
     f.scrollChild = child
     f.scroll = scroll
@@ -506,14 +512,14 @@ local function CreateSpellPicker()
     end)
     
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-    closeBtn:SetSize(60, 20)
-    closeBtn:SetPoint("BOTTOMRIGHT", -10, -5)
+    closeBtn:SetSize(70, 22)
+    closeBtn:SetPoint("BOTTOMRIGHT", -15, -10)
     closeBtn:SetText("Close")
     closeBtn:SetScript("OnClick", function() f:Hide() end)
     
     local targetBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-    targetBtn:SetSize(60, 20)
-    targetBtn:SetPoint("RIGHT", closeBtn, "LEFT", -5, 0)
+    targetBtn:SetSize(70, 22)
+    targetBtn:SetPoint("RIGHT", closeBtn, "LEFT", -8, 0)
     targetBtn:SetText("Target")
     targetBtn:SetScript("OnClick", function()
         ns.Bindings:SetTarget(f.currentSlot)
@@ -523,8 +529,8 @@ local function CreateSpellPicker()
     f.targetBtn = targetBtn
     
     local menuBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-    menuBtn:SetSize(50, 20)
-    menuBtn:SetPoint("RIGHT", targetBtn, "LEFT", -5, 0)
+    menuBtn:SetSize(60, 22)
+    menuBtn:SetPoint("RIGHT", targetBtn, "LEFT", -8, 0)
     menuBtn:SetText("Menu")
     menuBtn:SetScript("OnClick", function()
         ns.Bindings:SetMenu(f.currentSlot)
@@ -539,7 +545,7 @@ local function CreateSpellPicker()
     f.Open = function(self, slot, parent)
         self.currentSlot = slot
         self:ClearAllPoints()
-        self:SetPoint("LEFT", parent, "RIGHT", 10, 0)
+        self:SetPoint("LEFT", parent, "RIGHT", 15, 0)
         self.title:SetText("Assign: " .. slot)
         self:Show()
         self.editbox:SetText("")
@@ -576,17 +582,17 @@ local function CreateSpellPicker()
                 local btn = self.buttons[count]
                 if not btn then
                     btn = CreateFrame("Button", nil, child, "UIPanelButtonTemplate")
-                    btn:SetSize(300, 22)
+                    btn:SetSize(330, 24)
                     btn:SetText("")
                     
                     local icon = btn:CreateTexture(nil, "OVERLAY")
-                    icon:SetSize(18, 18)
-                    icon:SetPoint("LEFT", 2, 0)
+                    icon:SetSize(20, 20)
+                    icon:SetPoint("LEFT", 4, 0)
                     btn.icon = icon
                     
                     local t = btn:GetFontString()
                     t:ClearAllPoints()
-                    t:SetPoint("LEFT", icon, "RIGHT", 5, 0)
+                    t:SetPoint("LEFT", icon, "RIGHT", 8, 0)
                     t:SetJustifyH("LEFT")
                     
                     btn:SetScript("OnClick", function()
@@ -600,14 +606,14 @@ local function CreateSpellPicker()
                 btn:SetText(spell.name)
                 btn.icon:SetTexture(spell.texture)
                 btn:Show()
-                y = y + 24
+                y = y + 26
             end
         end
         
         if count == 0 then
             local nofit = child:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
             nofit:SetPoint("TOPLEFT", 5, 0)
-            nofit:SetText("No spells found in this category.")
+            nofit:SetText("No spells found.")
         end
         
         child:SetHeight(math.max(y, 100))
@@ -622,27 +628,27 @@ function UI:LoadKeybinds(c)
     
     local title = c:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 15, y); title:SetText("Keybinds")
-    y = y - 35
+    y = y - 40
 
     local tip = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     tip:SetPoint("TOPLEFT", 15, y); tip:SetText("Click + to assign a spell, X to clear, or use Auto Bind")
-    tip:SetTextColor(0.7, 0.7, 0.7); y = y - 30
+    tip:SetTextColor(0.7, 0.7, 0.7); y = y - 35
 
     local smart = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    smart:SetSize(120, 24); smart:SetPoint("TOPLEFT", 15, y); smart:SetText("Auto Bind")
+    smart:SetSize(140, 26); smart:SetPoint("TOPLEFT", 15, y); smart:SetText("Auto Bind")
     smart:SetScript("OnClick", function() ns.Bindings:SmartBind(); self:RefreshKeybinds() end)
 
     local clearAll = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    clearAll:SetSize(100, 24); clearAll:SetPoint("LEFT", smart, "RIGHT", 8, 0); clearAll:SetText("Clear All")
+    clearAll:SetSize(120, 26); clearAll:SetPoint("LEFT", smart, "RIGHT", 10, 0); clearAll:SetText("Clear All")
     clearAll:SetScript("OnClick", function() 
         for _, slot in ipairs(ns.Bindings:GetOrderedSlots()) do ns.Bindings:Clear(slot) end
         self:RefreshKeybinds() 
-    end); y = y - 35
+    end); y = y - 45
 
     c.keyHeader = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     c.keyHeader:SetPoint("TOPLEFT", 15, y); c.keyHeader:SetText("--- Bindings ---")
     c.keyRows = {}
-    c.keyY = y - 25
+    c.keyY = y - 30
     self:RefreshKeybinds()
     c.loaded = true
 end
@@ -651,7 +657,7 @@ function UI:RefreshKeybinds()
     local data = tabContent["Keybinds"]
     if not data or not data.child then return end
     local content = data.child
-    local y = content.keyY or -60
+    local y = content.keyY or -120
     
     if not spellPickerFrame then CreateSpellPicker() end
     
@@ -660,26 +666,26 @@ function UI:RefreshKeybinds()
         local row = content.keyRows and content.keyRows[i]
         if not row then
             row = CreateFrame("Frame", nil, content)
-            row:SetSize(360, 24)
-            row:SetPoint("TOPLEFT", 15, y - (i-1) * 26)
+            row:SetSize(500, 28)
+            row:SetPoint("TOPLEFT", 15, y - (i-1) * 30)
             
             row.txt = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
             row.txt:SetPoint("LEFT", 5, 0)
             row.txt:SetText(slot)
             
             row.spell = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            row.spell:SetPoint("LEFT", 100, 0)
-            row.spell:SetWidth(160)
+            row.spell:SetPoint("LEFT", 140, 0)
+            row.spell:SetWidth(300)
             
             local plus = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-            plus:SetSize(24, 18); plus:SetPoint("RIGHT", -5, 0); plus:SetText("+")
+            plus:SetSize(28, 22); plus:SetPoint("RIGHT", -5, 0); plus:SetText("+")
             plus:SetScript("OnClick", function()
                 spellPickerFrame:Open(slot, row)
             end)
             row.plus = plus
             
             local clr = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-            clr:SetSize(24, 18); clr:SetPoint("RIGHT", plus, "LEFT", -2, 0); clr:SetText("X")
+            clr:SetSize(28, 22); clr:SetPoint("RIGHT", plus, "LEFT", -4, 0); clr:SetText("X")
             clr:SetScript("OnClick", function() ns.Bindings:Clear(slot); self:RefreshKeybinds() end)
             row.clr = clr
             
