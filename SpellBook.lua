@@ -23,7 +23,7 @@ function SpellBook:GetBindable() return self.bindable end
 function SpellBook:FindByName(name) return name and self.byName[string.lower(name)] end
 
 -- Robust Tooltip Scanner for 3.3.5a / Ascension
-local function guessRole(slot, bookType, link)
+local function guessRole(slot, link)
     local tooltip = GameTooltip
     tooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
     tooltip:ClearLines()
@@ -31,10 +31,10 @@ local function guessRole(slot, bookType, link)
     if link then
         tooltip:SetHyperlink(link)
     else
-        tooltip:SetSpellBookItem(slot, bookType or "spell")
+        tooltip:SetSpellBookItem(slot, "spell")
     end
     
-    local name = GetSpellBookItemName(slot, bookType or "spell")
+    local name = GetSpellBookItemName(slot, "spell")
     if not name then return nil end
     
     local lname = lower(name)
@@ -92,7 +92,7 @@ function SpellBook:Scan(force)
             if name then
                 local link = ns.Compat:GetSpellLink(slot)
                 local isPassive = ns.Compat:IsPassive(slot)
-                local guessedRole = guessRole(slot, "spell", link)
+                local guessedRole = guessRole(slot, link)
                 guessedRole = normalizeRole(guessedRole)
 
                 local entry = {
@@ -126,7 +126,8 @@ function SpellBook:Scan(force)
 
     -- Range Spell
     self.rangeSpellName = nil
-    for _, role in ipairs({"heal", "hot", "shield_absorb", "cleanse", "support"}) do
+    local roleOrder = {"heal", "hot", "shield_absorb", "cleanse", "support"}
+    for _, role in ipairs(roleOrder) do
         for _, e in ipairs(self.bindable) do
             if e.role == role and ns.Compat:IsHelpfulRangeSpell(e.name) then self.rangeSpellName = e.name break end
         end
@@ -141,11 +142,6 @@ function SpellBook:Scan(force)
     if force then ns:Print(string.format("Scan complete: %d spells (%d healing)", self.stats.bindable, self.stats.healing)) end
 end
 
-function SpellBook:OnInitialize()
-end
-
-function SpellBook:OnEnable()
-    C_Timer.After(3, function() self:Scan(true) end)
-end
-
+function SpellBook:OnInitialize() end
+function SpellBook:OnEnable() C_Timer.After(3, function() self:Scan(true) end) end
 function SpellBook:OnEvent(event) end

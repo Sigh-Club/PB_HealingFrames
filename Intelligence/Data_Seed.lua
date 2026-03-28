@@ -19,24 +19,16 @@ HI.roleSpellIds = {
     shield_absorb = { 17, 47515, 53563, 53601, 974 },
     cleanse = { 4987, 527, 528, 552, 475, 2782, 2893, 8946, 51886 },
     resurrection = { 2006, 7328, 50769, 20484, 20773 },
-    support = { 33206, 47788, 29166, 10060, 16190, 29166, 6940, 1022, 1044, 53563 },
+    support = { 33206, 47788, 29166, 10060, 16190, 6940, 1022, 1044, 53563 },
     damage_to_heal = { 20473, 635, 585, 20271 },
 }
 
 HI.healingRoles = {
-    heal = true,
-    direct_heal = true,
-    hot = true,
-    shield_absorb = true,
-    damage_to_heal = true,
+    heal = true, direct_heal = true, hot = true, shield_absorb = true, damage_to_heal = true,
 }
 
 HI.supportRoles = {
-    support = true,
-    cleanse = true,
-    resurrection = true,
-    buff = true,
-    form = true,
+    support = true, cleanse = true, resurrection = true, buff = true, form = true,
 }
 
 HI.racialSpellNames = {
@@ -44,15 +36,9 @@ HI.racialSpellNames = {
     "Stoneform", "Escape Artist", "Perception", "The Human Spirit", "Diplomacy", "Mace Specialization",
     "Sword Specialization", "Find Treasure", "Gun Specialization", "Frost Resistance", "Nature Resistance",
     "Shadow Resistance", "Arcane Resistance", "Fire Resistance", "Expansive Mind", "Engineering Specialization",
-    "Every Man for Himself", "Gift of the Naaru", "Heroic Presence", "Shadow Resistance", "Gemcutting",
+    "Every Man for Himself", "Gift of the Naaru", "Heroic Presence", "Gemcutting",
     "War Stomp", "Cultivation", "Endurance", "Nature Resistance", "Axe Specialization", "Command",
     "Blood Frost", "Blood Scent", "Arcane Torrent", "Mana Tap", "Magic Resistance", "Arcane Affinity"
-}
-
-HI.racialSpellIds = {
-    20594, 20572, 7744, 20577, 20573, 26297, 20594, 20589, 20600, 20598, 20599, 20864, 20865, 
-    2481, 20595, 20583, 20582, 20585, 20584, 20581, 20591, 20592, 59752, 28880, 28877, 59544, 28875,
-    20549, 20552, 20550, 20551, 20574, 20575, 28730, 25046, 20271
 }
 
 HI.roleSpellNames = {
@@ -85,12 +71,8 @@ HI.roleSpellNames = {
         "Blessing of Might", "Greater Blessing of Might", "Blessing of Wisdom", "Greater Blessing of Wisdom",
         "Blessing of Sanctuary", "Greater Blessing of Sanctuary"
     },
-    form = {
-        "Tree of Life"
-    },
-    damage_to_heal = {
-        "Holy Shock", "Judgement", "Smite", "Atonement"
-    },
+    form = { "Tree of Life" },
+    damage_to_heal = { "Holy Shock", "Judgement", "Smite", "Atonement" },
 }
 
 HI.keywordRoles = {
@@ -103,21 +85,22 @@ HI.keywordRoles = {
     buff = { "blessing of", "greater blessing", "mark of the wild", "gift of the wild", "fortitude", "divine spirit", "shadow protection", "arcane intellect", "arcane brilliance", "thorns" },
 }
 
+-- ONE SOURCE OF TRUTH FOR TRACKED AURAS
 HI.trackedAuras = {
     topleft = {
-        "rejuvenation", "renew", "riptide", "sacred shield"
+        "rejuvenation", "renew", "riptide", "sacred shield", "lifebloom"
     },
     topright = {
-        "lifebloom", "prayer of mending", "earth shield", "beacon of light"
+        "prayer of mending", "earth shield", "beacon of light", "wild growth"
     },
     bottomleft = {
-        "wild growth", "power word: shield", "regrowth", "divine aegis"
+        "power word: shield", "regrowth", "divine aegis", "abolish disease"
     },
     bottomright = {
-        "abolish disease", "abolish poison", "fear ward", "pain suppression"
+        "abolish poison", "fear ward", "pain suppression", "guardian spirit"
     },
     center = {
-        "beacon of light" -- Track Beacon in center too if desired, or just corners
+        "beacon of light", "earth shield" -- Also track these in center if needed
     }
 }
 
@@ -136,14 +119,6 @@ HI.dispelColors = {
 }
 
 HI.dispelPriority = { "Magic", "Curse", "Disease", "Poison" }
-
-HI.statHints = {
-    { id = "spirit", note = "Common sustain and mana-regeneration priority in many healer discussions." },
-    { id = "intellect", note = "Common throughput/scaling stat." },
-    { id = "spell_power", note = "Direct throughput signal for many builds." },
-    { id = "crit", note = "Useful for some healing variants." },
-    { id = "haste", note = "Useful for cast-time and HoT cadence builds." },
-}
 
 HI.knownSpellRolesById = {}
 HI.knownSpellRolesByName = {}
@@ -167,14 +142,8 @@ for role, names in pairs(HI.roleSpellNames) do
     end
 end
 
-
-HI.defaultRangeSpells = { "Flash of Light", "Flash Heal", "Heal", "Holy Light", "Healing Wave", "Lesser Healing Wave", "Riptide", "Rejuvenation", "Renew", "Nourish", "Chain Heal", "Cleanse", "Purify", "Dispel Magic" }
-
 HI.smartBindPriorities = {
-    -- When hitting "Smart Bind", we want to assign the most logical spell to specific buttons based on what the player currently knows.
-    -- Lower number means higher priority.
     LeftButton = {
-        -- Primary quick/efficient heal
         { name = "Flash of Light", priority = 1 },
         { name = "Flash Heal", priority = 2 },
         { name = "Lesser Healing Wave", priority = 3 },
@@ -183,7 +152,6 @@ HI.smartBindPriorities = {
         { name = "Heal", priority = 6 },
     },
     RightButton = {
-        -- Primary HoT or secondary heal
         { name = "Rejuvenation", priority = 1 },
         { name = "Renew", priority = 2 },
         { name = "Riptide", priority = 3 },
@@ -193,7 +161,6 @@ HI.smartBindPriorities = {
         { name = "Healing Wave", priority = 7 },
     },
     MiddleButton = {
-        -- Group heal / Special
         { name = "Chain Heal", priority = 1 },
         { name = "Wild Growth", priority = 2 },
         { name = "Circle of Life", priority = 3 },
@@ -201,32 +168,15 @@ HI.smartBindPriorities = {
         { name = "Prayer of Healing", priority = 5 },
     },
     Button4 = {
-        -- Shield / Mitigation
         { name = "Power Word: Shield", priority = 1 },
         { name = "Earth Shield", priority = 2 },
         { name = "Sacred Shield", priority = 3 },
         { name = "Divine Aegis", priority = 4 },
     },
     Button5 = {
-        -- "Oh shit" / Fast HoT
         { name = "Swiftmend", priority = 1 },
         { name = "Penance", priority = 2 },
         { name = "Holy Shock", priority = 3 },
         { name = "Regrowth", priority = 4 },
-    }
-}
-
-HI.trackedAuras = {
-    topleft = {
-        "Rejuvenation", "Renew", "Riptide", "Sacred Shield"
-    },
-    topright = {
-        "Lifebloom", "Prayer of Mending", "Earth Shield", "Beacon of Light"
-    },
-    bottomleft = {
-        "Wild Growth", "Power Word: Shield", "Regrowth", "Divine Aegis"
-    },
-    bottomright = {
-        "Abolish Disease", "Abolish Poison", "Fear Ward", "Pain Suppression"
     }
 }

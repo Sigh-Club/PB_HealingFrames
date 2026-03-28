@@ -629,7 +629,7 @@ function Frames:UpdateButton(b)
         if UnitIsDeadOrGhost(unit) then status = "DEAD"
         elseif not UnitIsConnected(unit) then status = "OFFLINE" end
         
-        b.curableDebuff = debuff -- Store for Auras module to use
+        b.curableDebuff = debuff -- This now includes .texture, .count, .duration, .expires
     end
 
     b.nameText:SetText(ShortenName(name))

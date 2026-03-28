@@ -121,7 +121,7 @@ function UI:CreateMainWindow()
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetFont("Fonts\\FRIZQT__.TTF", 20, "OUTLINE")
     title:SetPoint("LEFT", headerIcon, "RIGHT", 10, 0)
-    title:SetText("PB: Healing Frames V 1.3.4 beta")
+    title:SetText("PB: Healing Frames V 1.3.5 beta")
 
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -5, -5)
