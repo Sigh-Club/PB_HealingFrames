@@ -61,3 +61,8 @@ No need for external addons like Clique.
 Inspired by the utility of Grid, the aesthetic of VuhDo, and the simplicity of HealBot. Built for healers who want maximum efficiency with minimum bloat.
 
 **MTC: Healing Frames v1.0.0-beta** | *Developed by Sigh-Club*
+
+---
+
+## ☕ Buy Me a Coffee
+Like the addon? Tips help keep development rolling. You can send a coffee via PayPal: **[paypal.me/talzanar](https://paypal.me/talzanar)**

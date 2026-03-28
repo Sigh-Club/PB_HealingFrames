@@ -4,6 +4,7 @@ ns.Roster = Roster
 
 Roster.entries = {}
 Roster.fakeIcons = {}
+Roster.anchorKey = "party"
 
 local testNames = {
     "Valawrath", "Thibodeauxz", "Aurelia", "Kargan", "Mistfen", "Cinderleaf", "Solenne", "Rimepaw",
@@ -28,6 +29,8 @@ local function buildLiveList()
     else
         table.insert(Roster.entries, { unit = "player", group = 1, fake = false })
     end
+    local count = #Roster.entries
+    Roster.anchorKey = (count > 5 or UnitInRaid("player")) and "raid" or "party"
 end
 
 local function buildFakeList(size)
@@ -49,6 +52,7 @@ local function buildFakeList(size)
         })
         Roster.fakeIcons[guid] = raidIcon
     end
+    Roster.anchorKey = (size or 0) > 5 and "raid" or "party"
 end
 
 function Roster:Refresh()
@@ -56,6 +60,9 @@ function Roster:Refresh()
     if ns.Frames then ns.Frames:ApplyLayout() end
     if ns.Frames and ns.Frames.SetFakeUpdatesEnabled then
         ns.Frames:SetFakeUpdatesEnabled(ns.DB.frame.fakeMode)
+        if ns.Frames.RefreshContainerPosition then
+            ns.Frames:RefreshContainerPosition()
+        end
     end
 end
 
@@ -66,6 +73,10 @@ function Roster:SetFakeMode(enabled, size)
     if ns.Frames and ns.Frames.SetFakeUpdatesEnabled then
         ns.Frames:SetFakeUpdatesEnabled(enabled)
     end
+end
+
+function Roster:GetAnchorKey()
+    return self.anchorKey or "party"
 end
 
 function Roster:OnEnable()

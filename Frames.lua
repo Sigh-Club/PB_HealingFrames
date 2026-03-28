@@ -21,6 +21,25 @@ local classColors = RAID_CLASS_COLORS or {}
 local STATUS_BAR_TEX = "Interface\\TargetingFrame\\UI-StatusBar"
 local SOLID_TEX = "Interface\\Buttons\\WHITE8X8"
 
+local function applyMasterAnchorPosition(frame, key)
+    local dbf = ns.DB.frame
+    dbf.anchorPositions = dbf.anchorPositions or {}
+    local pos = (key and dbf.anchorPositions[key])
+    if not pos then
+        pos = dbf.anchorPositions.party or dbf.anchorPositions.raid
+    end
+    if not pos and (dbf.x or dbf.y) then
+        pos = { x = dbf.x or 0, y = dbf.y or 0 }
+        dbf.anchorPositions[key or "party"] = { x = pos.x, y = pos.y }
+    end
+    frame:ClearAllPoints()
+    if pos and pos.x and pos.y then
+        frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", pos.x, pos.y)
+    else
+        frame:SetPoint("CENTER")
+    end
+end
+
 local function unpackColor(t, default)
     if type(t) == "table" then return t[1] or 1, t[2] or 1, t[3] or 1 end
     return unpack(default or {1,1,1})
@@ -138,6 +157,21 @@ end
 
 local HOT_ORDER_BARS = {"topleft", "bottomleft", "topright", "bottomright"}
 local HOT_ORDER_GRID = {"topleft", "topright"}
+
+function Frames:GetActiveAnchorKey()
+    if ns.Roster and ns.Roster.GetAnchorKey then
+        return ns.Roster:GetAnchorKey()
+    end
+    return "party"
+end
+
+function Frames:RefreshContainerPosition(force)
+    if not self.container then return end
+    local key = self:GetActiveAnchorKey()
+    if not force and self.containerKey == key then return end
+    self.containerKey = key
+    applyMasterAnchorPosition(self.container, key)
+end
 
 local function LayoutAuraIndicators(button, isGrid, cfg)
     if not button or not button.auraIndicators then return end
@@ -459,10 +493,11 @@ local function CreateButton(i)
     return b
 end
 
-function Frames:CreateAnchor(id)
+function Frames:CreateAnchor(id, anchorKey)
     local name = id and ("PB_HF_Anchor" .. id) or "PB_HF_Anchor"
     local f = _G[name] or CreateFrame("Frame", name, UIParent)
     f:SetSize(id and 100 or 200, id and 20 or 100)
+    local owner = self
     
     -- Load position
     local dbf = ns.DB.frame
@@ -475,12 +510,9 @@ function Frames:CreateAnchor(id)
             f:SetPoint("CENTER", -200 + (id-1)*60, 100)
         end
     else
-        if dbf.x then
-            f:ClearAllPoints()
-            f:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", dbf.x, dbf.y)
-        else
-            f:SetPoint("CENTER")
-        end
+        local key = anchorKey or self:GetActiveAnchorKey()
+        applyMasterAnchorPosition(f, key)
+        self.containerKey = key
     end
 
     f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
@@ -491,8 +523,12 @@ function Frames:CreateAnchor(id)
         if id then
             dbf.groupPositions[id] = { x = x, y = y }
         else
+            local key = owner:GetActiveAnchorKey()
+            dbf.anchorPositions = dbf.anchorPositions or {}
+            dbf.anchorPositions[key] = { x = x, y = y }
             dbf.x = x
             dbf.y = y
+            owner.containerKey = key
         end
     end)
 
@@ -516,7 +552,8 @@ end
 
 function Frames:EnsureAnchors(activeGroups)
     local dbf = ns.DB.frame
-    if not self.container then self.container = self:CreateAnchor() end
+    if not self.container then self.container = self:CreateAnchor(nil, self:GetActiveAnchorKey()) end
+    self:RefreshContainerPosition()
     
     if not ns.DB.enabled then
         self.container:Hide()
@@ -578,7 +615,8 @@ function Frames:ApplyLayout()
     local tex = dbf.barTexture or STATUS_BAR_TEX
     
     -- We'll call EnsureAnchors from ApplyRoster now to know active groups
-    if not self.container then self.container = self:CreateAnchor() end
+    if not self.container then self.container = self:CreateAnchor(nil, self:GetActiveAnchorKey()) end
+    self:RefreshContainerPosition()
     
     local scale = cfg.scale or 1
     self.container:SetScale(scale)
@@ -1018,6 +1056,7 @@ function Frames:ResetAnchorPositions()
     dbf.x = nil
     dbf.y = nil
     dbf.groupPositions = {}
+    dbf.anchorPositions = {}
     
     if self.container then
         self.container:ClearAllPoints()
