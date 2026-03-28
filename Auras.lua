@@ -8,30 +8,44 @@ local function collectActiveAuras(unit)
     local active = {}
     if not unit or not UnitExists(unit) then return active end
     
-    -- Scan Helpful (Buffs)
+    -- Helpful (Buffs) - using UnitBuff for clarity in 3.3.5a
     for i = 1, 40 do
-        local name, _, icon, count, _, duration, expirationTime, caster = UnitAura(unit, i, "HELPFUL")
+        local name, _, icon, count, _, duration, expirationTime, caster = UnitBuff(unit, i)
         if not name then break end
         
         local lname = string.lower(name)
         local pos = positionMap[lname]
         
         if pos and not active[pos] then
-            -- We track it if it's from us, or if it's high priority like Beacon/Earth Shield
-            local isMine = caster and (UnitIsUnit(caster, "player") or UnitIsUnit(caster, "pet"))
-            if isMine or lname == "beacon of light" or lname == "earth shield" then
+            -- Robust caster check for 3.3.5a / Ascension
+            local isMine = false
+            if caster then
+                if UnitIsUnit(caster, "player") or UnitIsUnit(caster, "pet") or caster == "player" or caster == "pet" then
+                    isMine = true
+                end
+            end
+
+            -- Special high-priority buffs tracked regardless of caster (but usually ours)
+            if isMine or lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield" then
                 active[pos] = { icon = icon, count = count, duration = duration, expires = expirationTime }
             end
         end
     end
     
-    -- Scan Harmful (Debuffs for center icon)
+    -- Harmful (Debuffs) - using UnitDebuff
     for i = 1, 40 do
-        local name, _, icon, count, _, duration, expirationTime = UnitAura(unit, i, "HARMFUL")
+        local name, _, icon, count, _, duration, expirationTime = UnitDebuff(unit, i)
         if not name then break end
         
         local lname = string.lower(name)
-        if positionMap[lname] == "center" and not active.center then
+        -- Tracking specific debuffs for corners if mapped
+        local pos = positionMap[lname]
+        if pos and not active[pos] then
+            active[pos] = { icon = icon, count = count, duration = duration, expires = expirationTime }
+        end
+        
+        -- Also check if it belongs in center (tracked debuffs)
+        if pos == "center" and not active.center then
             active.center = { icon = icon, count = count, duration = duration, expires = expirationTime }
         end
     end
@@ -137,6 +151,7 @@ end
 
 function Auras:OnEvent(event, unit)
     if event == "UNIT_AURA" then
+        -- Optimization: only update buttons for this unit
         for _, b in ipairs(ns.Frames.buttons) do
             if b.unit == unit then self:UpdateButtonAuras(b) end
         end

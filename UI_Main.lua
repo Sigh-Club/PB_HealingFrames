@@ -114,14 +114,14 @@ function UI:CreateMainWindow()
     frame:Hide()
 
     local headerIcon = frame:CreateTexture(nil, "OVERLAY")
-    headerIcon:SetSize(48, 48)
+    headerIcon:SetSize(40, 40)
     headerIcon:SetPoint("TOPLEFT", 10, -5)
-    headerIcon:SetTexture("Interface\\AddOns\\PB_HealingFrames\\Media\\MTCIcon.tga")
+    headerIcon:SetTexture("Interface\\AddOns\\PB_HealingFrames\\Media\\MTCbadge.tga")
 
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetFont("Fonts\\FRIZQT__.TTF", 20, "OUTLINE")
-    title:SetPoint("LEFT", headerIcon, "RIGHT", 15, 0)
-    title:SetText("PB: Healing Frames V 1.3.3 beta")
+    title:SetPoint("LEFT", headerIcon, "RIGHT", 10, 0)
+    title:SetText("PB: Healing Frames V 1.3.4 beta")
 
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -5, -5)
@@ -571,6 +571,14 @@ local function CreateSpellPicker()
                         if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
                         self:Hide()
                     end)
+                    
+                    btn:SetScript("OnEnter", function(selfRow)
+                        GameTooltip:SetOwner(selfRow, "ANCHOR_RIGHT")
+                        GameTooltip:SetSpell(spell.slot, "spell")
+                        GameTooltip:Show()
+                    end)
+                    btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+                    
                     self.buttons[count] = btn
                 end
                 btn:SetPoint("TOPLEFT", 5, -y)

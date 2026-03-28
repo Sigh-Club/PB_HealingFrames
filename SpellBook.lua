@@ -91,13 +91,16 @@ function SpellBook:Scan(force)
     local now = GetTime()
     if not force and now - lastScan < 5 then return end
     
-    local currentCount = 0
     local tabCount = ns.Compat:GetNumSpellTabs()
-    if tabCount and tabCount > 0 then
-        for tab = 1, tabCount do
-            local _, _, _, numSpells = ns.Compat:GetSpellTabInfo(tab)
-            currentCount = currentCount + (numSpells or 0)
-        end
+    if not tabCount or tabCount == 0 then
+        if force then C_Timer.After(2, function() self:Scan(true) end) end
+        return 
+    end
+
+    local currentCount = 0
+    for tab = 1, tabCount do
+        local _, _, _, numSpells = ns.Compat:GetSpellTabInfo(tab)
+        currentCount = currentCount + (numSpells or 0)
     end
 
     if not force and currentCount == lastSpellCount and lastSpellCount > 0 then return end
@@ -112,8 +115,6 @@ function SpellBook:Scan(force)
     local opts = ns.DB.scan or { excludeGeneral = true, excludePassive = true, excludeProfessions = true, dedupeByName = true }
     local seen = {}
     local BOOKTYPE = "spell"
-
-    if not tabCount or tabCount == 0 then return end
 
     for tab = 1, tabCount do
         local tabName, _, offset, numSpells = ns.Compat:GetSpellTabInfo(tab)
@@ -157,7 +158,6 @@ function SpellBook:Scan(force)
         end
     end
 
-    -- Dispel Caps
     wipe(self.dispelCapabilities)
     local intel = ns.HealingIntel or {}
     for dtype, ids in pairs(intel.dispelAbilities or {}) do
@@ -170,7 +170,6 @@ function SpellBook:Scan(force)
         end
     end
 
-    -- Range Spell
     self.rangeSpellName = nil
     local roleOrder = {"heal", "hot", "shield_absorb", "cleanse", "support"}
     for _, role in ipairs(roleOrder) do
@@ -184,7 +183,6 @@ function SpellBook:Scan(force)
     end
 
     table.sort(self.bindable, function(a, b) return a.name < b.name end)
-    
     self.stats.bindable = #self.bindable
     self.stats.healing = 0
     for _, e in ipairs(self.bindable) do
@@ -192,15 +190,19 @@ function SpellBook:Scan(force)
             self.stats.healing = self.stats.healing + 1
         end
     end
+
+    if force then
+        ns:Print(string.format("Scan complete: %d bindable spells found (%d healing)", self.stats.bindable, self.stats.healing))
+    end
 end
 
 function SpellBook:OnInitialize()
 end
 
 function SpellBook:OnEnable()
-    self:Scan(true)
+    -- Wait 5 seconds after login to ensure spellbook is fully ready
+    C_Timer.After(5, function() self:Scan(true) end)
 end
 
 function SpellBook:OnEvent(event)
-    -- Silent scans and manual triggers only
 end
