@@ -170,6 +170,10 @@ function UI:LoadGeneral(c)
     title:SetPoint("TOPLEFT", 15, y); title:SetText("General")
     y = y - 30
 
+    local master = mkCheck(c, "Enable PB: Healing Frames", "Toggle the entire addon on or off.", 
+        function() return ns.DB.enabled ~= false end, function(v) ns:SetEnabled(v) end)
+    master:SetPoint("TOPLEFT", 15, y); y = y - 30
+
     local lock = mkCheck(c, "Lock Position", "Lock the frame position.", 
         function() return ns.DB.locked end, function(v) ns.DB.locked = v end)
     lock:SetPoint("TOPLEFT", 15, y); y = y - 30
@@ -242,7 +246,7 @@ function UI:LoadLayout(c)
     c.bSpacing = mkSlider(c, "Spacing", 0, 20, 1, function() return ns.DB.frame.bars.spacing or 4 end, function(v) ns.DB.frame.bars.spacing = v end)
     c.bSpacing:SetPoint("TOPLEFT", 200, y); c.bSpacing:SetWidth(120); y = y - 40
 
-    c.bCols = mkSlider(c, "Groups/Row", 1, 5, 1, function() return ns.DB.frame.bars.groupsPerRow or 2 end, function(v) ns.DB.frame.bars.groupsPerRow = v end)
+    c.bCols = mkSlider(c, "Groups/Row", 1, 8, 1, function() return ns.DB.frame.bars.groupsPerRow or 2 end, function(v) ns.DB.frame.bars.groupsPerRow = v end)
     c.bCols:SetPoint("TOPLEFT", 15, y); c.bCols:SetWidth(120)
 
     c.bGroupSp = mkSlider(c, "Group Gap", 5, 40, 1, function() return ns.DB.frame.bars.groupSpacing or 18 end, function(v) ns.DB.frame.bars.groupSpacing = v end)
@@ -438,8 +442,19 @@ local function CreateSpellPicker()
                 local btn = self.buttons[count]
                 if not btn then
                     btn = CreateFrame("Button", nil, child, "UIPanelButtonTemplate")
-                    btn:SetSize(200, 20)
+                    btn:SetSize(200, 22)
                     btn:SetText("")
+                    
+                    local icon = btn:CreateTexture(nil, "OVERLAY")
+                    icon:SetSize(18, 18)
+                    icon:SetPoint("LEFT", 2, 0)
+                    btn.icon = icon
+                    
+                    local t = btn:GetFontString()
+                    t:ClearAllPoints()
+                    t:SetPoint("LEFT", icon, "RIGHT", 5, 0)
+                    t:SetJustifyH("LEFT")
+                    
                     btn:SetScript("OnClick", function()
                         ns.Bindings:SetSpell(self.currentSlot, spell.name)
                         if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
@@ -449,8 +464,9 @@ local function CreateSpellPicker()
                 end
                 btn:SetPoint("TOPLEFT", 5, -y)
                 btn:SetText(spell.name)
+                btn.icon:SetTexture(spell.texture)
                 btn:Show()
-                y = y + 22
+                y = y + 24
             end
         end
         

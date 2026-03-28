@@ -20,6 +20,12 @@ SlashCmdList["PBHF"] = function(msg)
         else 
             ns:Print("Error: UI module failed to load.") 
         end
+    elseif msg == "on" then
+        ns:SetEnabled(true); ns:Print("Enabled.")
+    elseif msg == "off" then
+        ns:SetEnabled(false); ns:Print("Disabled.")
+    elseif msg == "toggle" then
+        ns:SetEnabled(not ns.DB.enabled); ns:Print(ns.DB.enabled and "Enabled." or "Disabled.")
     elseif msg == "scan" then
         if ns.SpellBook and ns.SpellBook.Scan then ns.SpellBook:Scan() end
     elseif msg == "smartbind" then

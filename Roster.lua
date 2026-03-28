@@ -55,6 +55,10 @@ function Roster:SetFakeMode(enabled, size)
     self:Refresh()
 end
 
+function Roster:OnEnable()
+    self:Refresh()
+end
+
 function Roster:OnEvent(event)
     if event == "PLAYER_ENTERING_WORLD" or event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
         if not ns.DB.frame.fakeMode then self:Refresh() end

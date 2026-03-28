@@ -104,6 +104,23 @@ local function CreateAuraIndicator(parent, point, x, y)
     return f
 end
 
+local function processQueue()
+    if InCombatLockdown() then return end
+    for btn, unit in pairs(Frames.queue) do
+        btn:SetAttribute("unit", unit)
+        Frames.queue[btn] = nil
+    end
+end
+
+local function setUnit(btn, unit)
+    if InCombatLockdown() then
+        Frames.queue[btn] = unit
+    else
+        btn:SetAttribute("unit", unit)
+        Frames.queue[btn] = nil
+    end
+end
+
 local function CreateButton(i)
     local b = CreateFrame("Button", "PB_HF_UnitButton"..i, Frames.container, "SecureUnitButtonTemplate")
     b:RegisterForClicks("AnyUp")
@@ -164,8 +181,8 @@ local function CreateButton(i)
 
     local overlay = overlayLayer:CreateTexture(nil, "OVERLAY")
     overlay:SetAllPoints()
-    overlay:SetTexture(SOLID_TEX) -- Use solid white texture for smooth tinting
-    overlay:SetBlendMode("BLEND") -- Switched from ADD to BLEND for solid distinction
+    overlay:SetTexture(SOLID_TEX)
+    overlay:SetBlendMode("BLEND")
     overlay:Hide()
     b.statusOverlay = overlay
 
@@ -184,7 +201,6 @@ local function CreateButton(i)
     glow:SetPoint("BOTTOMRIGHT", 1, -1)
     glow:SetFrameLevel(b:GetFrameLevel() + 8)
     glow:EnableMouse(false)
-    -- Use simple solid color borders instead of tiled backdrop textures
     local borderTop = glow:CreateTexture(nil, "OVERLAY")
     borderTop:SetPoint("TOPLEFT"); borderTop:SetPoint("TOPRIGHT"); borderTop:SetHeight(1)
     local borderBottom = glow:CreateTexture(nil, "OVERLAY")
@@ -202,6 +218,30 @@ local function CreateButton(i)
     end
     glow:Hide()
     b.glow = glow
+
+    -- 5a. Target Glow (White border)
+    local targetGlow = CreateFrame("Frame", nil, b)
+    targetGlow:SetPoint("TOPLEFT", -2, 2)
+    targetGlow:SetPoint("BOTTOMRIGHT", 2, -2)
+    targetGlow:SetFrameLevel(b:GetFrameLevel() + 7)
+    targetGlow:EnableMouse(false)
+    local tgTop = targetGlow:CreateTexture(nil, "OVERLAY")
+    tgTop:SetPoint("TOPLEFT"); tgTop:SetPoint("TOPRIGHT"); tgTop:SetHeight(2); tgTop:SetTexture(1, 1, 1, 0.7)
+    local tgBottom = targetGlow:CreateTexture(nil, "OVERLAY")
+    tgBottom:SetPoint("BOTTOMLEFT"); tgBottom:SetPoint("BOTTOMRIGHT"); tgBottom:SetHeight(2); tgBottom:SetTexture(1, 1, 1, 0.7)
+    local tgLeft = targetGlow:CreateTexture(nil, "OVERLAY")
+    tgLeft:SetPoint("TOPLEFT"); tgLeft:SetPoint("BOTTOMLEFT"); tgLeft:SetWidth(2); tgLeft:SetTexture(1, 1, 1, 0.7)
+    local tgRight = targetGlow:CreateTexture(nil, "OVERLAY")
+    tgRight:SetPoint("TOPRIGHT"); tgRight:SetPoint("BOTTOMRIGHT"); tgRight:SetWidth(2); tgRight:SetTexture(1, 1, 1, 0.7)
+    targetGlow:Hide()
+    b.targetGlow = targetGlow
+
+    -- 5b. Hover Highlight
+    local hover = b:CreateTexture(nil, "HIGHLIGHT")
+    hover:SetAllPoints()
+    hover:SetTexture(1, 1, 1, 0.1)
+    hover:SetBlendMode("ADD")
+    b.hover = hover
 
     -- 6. Interaction Layer (Top Level)
     local inter = CreateFrame("Frame", nil, b)
@@ -221,6 +261,12 @@ local function CreateButton(i)
     name:SetShadowOffset(1, -1)
     name:SetTextColor(1, 1, 1)
     b.nameText = name
+
+    local roleIcon = inter:CreateTexture(nil, "OVERLAY")
+    roleIcon:SetSize(12, 12)
+    roleIcon:SetPoint("TOPLEFT", 2, -2)
+    roleIcon:Hide()
+    b.roleIcon = roleIcon
 
     local mana = CreateFrame("StatusBar", nil, b)
     mana:SetStatusBarTexture(STATUS_BAR_TEX)
@@ -356,13 +402,13 @@ function Frames:ApplyRoster()
                 b:SetPoint("TOPLEFT", self.container, "TOPLEFT", x, y)
             end
             
-            b:SetAttribute("unit", entry.unit)
+            ns:SafeSetAttribute(b, "unit", entry.unit)
             b:Show()
             self:UpdateButton(b)
         else
             b:Hide()
             b.unit = nil
-            b:SetAttribute("unit", nil)
+            ns:SafeSetAttribute(b, "unit", nil)
         end
     end
 end
@@ -384,10 +430,11 @@ local function ShortenName(name)
 end
 
 function Frames:UpdateButton(b)
+    if not ns.DB.enabled then b:Hide(); return end
     local unit = b.unit
     local fake = b.fakeData
     local dbf = ns.DB.frame
-    local name, hp, maxhp, pct, debuff, mana, maxmana, status
+    local name, hp, maxhp, pct, debuff, mana, maxmana, status, role
 
     if fake then
         name = fake.name
@@ -408,6 +455,12 @@ function Frames:UpdateButton(b)
         local _, class = UnitClass(unit)
         local cc = classColors[class] or {r=1, g=1, b=1}
         b.nameText:SetTextColor(cc.r, cc.g, cc.b)
+        
+        if UnitInRaid(unit) then
+            local _, raidRole = GetRaidRosterInfo(string.match(unit, "%d+") or 0)
+            if raidRole == "MAINTANK" then role = "TANK" end
+        end
+
         if UnitIsDeadOrGhost(unit) then status = "DEAD"
         elseif not UnitIsConnected(unit) then status = "OFFLINE" end
     end
@@ -418,6 +471,15 @@ function Frames:UpdateButton(b)
     
     local r, g, bl = healthColor(pct)
     b.hp:SetStatusBarColor(r, g, bl, 0.9)
+
+    -- Role Icon
+    if role == "TANK" then
+        b.roleIcon:SetTexture("Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES")
+        b.roleIcon:SetTexCoord(0, 19/64, 22/64, 41/64)
+        b.roleIcon:Show()
+    else
+        b.roleIcon:Hide()
+    end
 
     -- THE FIX: Solid Color Overlay that scales perfectly
     if debuff and debuff.dtype and dbf.highlightCurableDebuffs then
@@ -432,6 +494,13 @@ function Frames:UpdateButton(b)
     end
 
     b.nameText:SetText(ShortenName(name))
+    
+    if not fake and unit and UnitIsUnit(unit, "target") then
+        b.targetGlow:Show()
+    else
+        b.targetGlow:Hide()
+    end
+
     b.statusText:SetText(status or (pct .. "%"))
     
     if b.mana:IsShown() then
@@ -457,6 +526,10 @@ function Frames:OnEnable() self:ApplyLayout() end
 function Frames:OnEvent(event, unit) 
     if event == "PLAYER_ENTERING_WORLD" or event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
         self:ApplyLayout() 
+    elseif event == "PLAYER_TARGET_CHANGED" then
+        for _, b in ipairs(self.buttons) do 
+            if b:IsShown() and b.unit then self:UpdateButton(b) end 
+        end
     elseif unit then
         for _, b in ipairs(self.buttons) do if b.unit == unit then self:UpdateButton(b) end end
     end

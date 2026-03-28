@@ -37,6 +37,26 @@ function ns:Print(msg)
     end
 end
 
+ns.secureQueue = {}
+function ns:SafeSetAttribute(btn, name, value)
+    if InCombatLockdown() then
+        self.secureQueue[btn] = self.secureQueue[btn] or {}
+        self.secureQueue[btn][name] = value
+    else
+        btn:SetAttribute(name, value)
+    end
+end
+
+local function ProcessSecureQueue()
+    if InCombatLockdown() then return end
+    for btn, attrs in pairs(ns.secureQueue) do
+        for name, value in pairs(attrs) do
+            btn:SetAttribute(name, value)
+        end
+        ns.secureQueue[btn] = nil
+    end
+end
+
 local function EnsureSaved()
     PB_HF_DB = PB_HF_DB or {}
     PB_HF_DB.profiles = PB_HF_DB.profiles or {}
@@ -58,7 +78,7 @@ local function EnsureSaved()
     
     local f = ns.DB.frame
     f.layoutStyle = f.layoutStyle or "bars"
-    f.bars = f.bars or { width = 180, height = 22, spacing = 4, scale = 1, groupsPerRow = 2, groupSpacing = 18, nameLength = 12, shortenNames = false }
+    f.bars = f.bars or { width = 160, height = 20, spacing = 3, scale = 1, groupsPerRow = 4, groupSpacing = 12, nameLength = 10, shortenNames = true }
     f.grid = f.grid or { size = 40, columns = 5, spacing = 2, scale = 1, nameLength = 6, shortenNames = true }
     f.outOfRangeAlpha = f.outOfRangeAlpha or 0.35
     
@@ -67,8 +87,19 @@ local function EnsureSaved()
     if f.showManaBar == nil then f.showManaBar = true end
     if f.showHealthText == nil then f.showHealthText = true end
     if f.showStatusText == nil then f.showStatusText = true end
+    if ns.DB.enabled == nil then ns.DB.enabled = true end
     
     PB_HF_Global = PB_HF_Global or {}
+end
+
+function ns:SetEnabled(v)
+    ns.DB.enabled = v
+    if v then
+        if ns.Frames and ns.Frames.container then ns.Frames.container:Show() end
+        if ns.Roster then ns.Roster:Refresh() end
+    else
+        if ns.Frames and ns.Frames.container then ns.Frames.container:Hide() end
+    end
 end
 
 local isBootstrapped = false
@@ -94,6 +125,8 @@ frame:SetScript("OnEvent", function(self, event, arg1)
         Bootstrap()
     elseif event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" then
         Bootstrap()
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        ProcessSecureQueue()
     end
     
     if isBootstrapped then
@@ -105,7 +138,8 @@ end)
 local events = { 
     "PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE", 
     "UNIT_HEALTH", "UNIT_MAXHEALTH", "UNIT_AURA", "UNIT_POWER", "UNIT_DISPLAYPOWER",
-    "LEARNED_SPELL_IN_TAB", "PLAYER_TALENT_UPDATE", "SKILL_LINES_CHANGED", "CHARACTER_POINTS_CHANGED", "SPELLS_CHANGED"
+    "LEARNED_SPELL_IN_TAB", "PLAYER_TALENT_UPDATE", "SKILL_LINES_CHANGED", "CHARACTER_POINTS_CHANGED", "SPELLS_CHANGED",
+    "PLAYER_REGEN_ENABLED", "PLAYER_TARGET_CHANGED"
 }
 for _, ev in ipairs(events) do frame:RegisterEvent(ev) end
 

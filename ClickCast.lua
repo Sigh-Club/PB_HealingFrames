@@ -26,13 +26,13 @@ local function clearBinding(btn, slot)
     local prefix, index = parseSlot(slot)
     if not index then return end
     if prefix then
-        btn:SetAttribute(prefix .. "-type" .. index, nil)
-        btn:SetAttribute(prefix .. "-spell" .. index, nil)
-        btn:SetAttribute(prefix .. "-macrotext" .. index, nil)
+        ns:SafeSetAttribute(btn, prefix .. "-type" .. index, nil)
+        ns:SafeSetAttribute(btn, prefix .. "-spell" .. index, nil)
+        ns:SafeSetAttribute(btn, prefix .. "-macrotext" .. index, nil)
     else
-        btn:SetAttribute("type" .. index, nil)
-        btn:SetAttribute("spell" .. index, nil)
-        btn:SetAttribute("macrotext" .. index, nil)
+        ns:SafeSetAttribute(btn, "type" .. index, nil)
+        ns:SafeSetAttribute(btn, "spell" .. index, nil)
+        ns:SafeSetAttribute(btn, "macrotext" .. index, nil)
     end
 end
 
@@ -46,15 +46,15 @@ local function applyBinding(btn, slot, data)
     local mkey = (prefix and (prefix .. "-macrotext" .. index)) or ("macrotext" .. index)
 
     if data.type == "spell" and data.value and data.value ~= "" then
-        btn:SetAttribute(tkey, "spell")
-        btn:SetAttribute(skey, data.value)
+        ns:SafeSetAttribute(btn, tkey, "spell")
+        ns:SafeSetAttribute(btn, skey, data.value)
     elseif data.type == "target" then
-        btn:SetAttribute(tkey, "target")
+        ns:SafeSetAttribute(btn, tkey, "target")
     elseif data.type == "menu" then
-        btn:SetAttribute(tkey, "menu")
+        ns:SafeSetAttribute(btn, tkey, "menu")
     elseif data.type == "macro" and data.value and data.value ~= "" then
-        btn:SetAttribute(tkey, "macro")
-        btn:SetAttribute(mkey, data.value)
+        ns:SafeSetAttribute(btn, tkey, "macro")
+        ns:SafeSetAttribute(btn, mkey, data.value)
     end
 end
 
