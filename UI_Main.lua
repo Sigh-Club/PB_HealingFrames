@@ -620,20 +620,30 @@ local function CreateSpellPicker()
                     btn:SetFontString(text)
                     
                     btn:SetScript("OnClick", function()
-                        ns.Bindings:SetSpell(self.currentSlot, spell.name)
-                        if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
-                        self:Hide()
+                        local s = btn.spellData
+                        if s then
+                            ns.Bindings:SetSpell(self.currentSlot, s.name)
+                            if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
+                            self:Hide()
+                        end
                     end)
                     
                     btn:SetScript("OnEnter", function(selfRow)
+                        local s = selfRow.spellData
+                        if not s then return end
                         GameTooltip:SetOwner(selfRow, "ANCHOR_RIGHT")
-                        GameTooltip:SetSpellBookItem(spell.slot, "spell")
+                        if GameTooltip.SetSpellBookItem then
+                            GameTooltip:SetSpellBookItem(s.slot, "spell")
+                        elseif s.link then
+                            GameTooltip:SetHyperlink(s.link)
+                        end
                         GameTooltip:Show()
                     end)
                     btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
                     
                     self.buttons[count] = btn
                 end
+                btn.spellData = spell
                 btn:SetPoint("TOPLEFT", 5, -y)
                 btn:SetText(spell.name)
                 btn.icon:SetTexture(spell.texture)

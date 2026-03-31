@@ -46,6 +46,7 @@ local fallbackIntel = {
     },
     healingRoles = {
         heal = true, direct_heal = true, hot = true, shield_absorb = true, damage_to_heal = true,
+        proc_heal = true, smart_heal = true,
     },
     supportRoles = {
         support = true, cleanse = true, resurrection = true, buff = true, form = true,
@@ -108,11 +109,11 @@ local fallbackIntel = {
         buff = { "blessing of", "greater blessing", "mark of the wild", "gift of the wild", "fortitude", "divine spirit", "shadow protection", "arcane intellect", "arcane brilliance", "thorns" },
     },
     trackedAuras = {
-        topleft = { "rejuvenation", "renew", "riptide", "sacred shield", "lifebloom" },
-        topright = { "prayer of mending", "earth shield", "beacon of light", "wild growth" },
+        topleft = { "rejuvenation", "renew", "riptide", "lifebloom" },
+        topright = { "prayer of mending", "wild growth" },
         bottomleft = { "power word: shield", "regrowth", "divine aegis", "abolish disease" },
         bottomright = { "abolish poison", "fear ward", "pain suppression", "guardian spirit" },
-        center = { "beacon of light", "earth shield" }
+        center = { "beacon of light", "earth shield", "sacred shield" }
     },
     dispelAbilities = {
         Magic = { 4987, 527, 528 },

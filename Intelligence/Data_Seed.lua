@@ -25,6 +25,7 @@ HI.roleSpellIds = {
 
 HI.healingRoles = {
     heal = true, direct_heal = true, hot = true, shield_absorb = true, damage_to_heal = true,
+    proc_heal = true, smart_heal = true,
 }
 
 HI.supportRoles = {
@@ -78,7 +79,9 @@ HI.roleSpellNames = {
         "Blessing of Sanctuary", "Greater Blessing of Sanctuary"
     },
     form = { "Tree of Life" },
-    damage_to_heal = { "Holy Shock", "Judgement", "Smite", "Atonement" },
+    damage_to_heal = { "Holy Shock", "Judgement", "Smite", "Atonement", "Penance" },
+    proc_heal = { "Atonement", "Prayer of Mending", "Cauterizing Flames" },
+    smart_heal = { "Chain Heal", "Prayer of Healing", "Wild Growth", "Circle of Life", "Prayer of Mending" },
 }
 
 HI.keywordRoles = {
@@ -94,10 +97,10 @@ HI.keywordRoles = {
 -- ONE SOURCE OF TRUTH FOR TRACKED AURAS
 HI.trackedAuras = {
     topleft = {
-        "rejuvenation", "renew", "riptide", "sacred shield", "lifebloom"
+        "rejuvenation", "renew", "riptide", "lifebloom", "grace",
     },
     topright = {
-        "prayer of mending", "earth shield", "beacon of light", "wild growth"
+        "prayer of mending", "wild growth"
     },
     bottomleft = {
         "power word: shield", "regrowth", "divine aegis", "abolish disease"
@@ -106,7 +109,7 @@ HI.trackedAuras = {
         "abolish poison", "fear ward", "pain suppression", "guardian spirit"
     },
     center = {
-        "beacon of light", "earth shield" -- Also track these in center if needed
+        "beacon of light", "earth shield", "sacred shield"
     }
 }
 
@@ -185,6 +188,92 @@ HI.smartBindPriorities = {
         { name = "Holy Shock", priority = 3 },
         { name = "Regrowth", priority = 4 },
     }
+}
+
+HI.enchantMarkers = {
+    atonement = {
+        auras = { "Atonement" },
+        triggersFrom = { "Smite", "Holy Fire", "Penance" },
+        requiresOnTarget = { "Grace" },
+        engineHint = "damage_to_heal",
+    },
+    lowTide = {
+        auras = { "Low Tide" },
+        modifies = { "Riptide" },
+        engineHint = "hot_maintenance",
+    },
+    dominantWordShield = {
+        auras = { "Dominant Word: Shield" },
+        modifies = { "Power Word: Shield" },
+        threshold = { spell = "Power Word: Shield", hpPct = 0.75 },
+        engineHint = "absorb_shield",
+    },
+    earthsBlessing = {
+        auras = { "Earth's Blessing" },
+        modifies = { "Earth Shield" },
+    },
+    transcendentalEmbrace = {
+        auras = { "Transcendental Embrace" },
+        extendsTrigger = { "Healing Wave" },
+    },
+    wordsOfHealing = {
+        auras = { "Words of Healing" },
+        modifies = { "Borrowed Time" },
+        engineHint = "absorb_shield",
+    },
+    massHysteria = {
+        replaces = { base = "Fear", override = "Fear (Mass Hysteria)" },
+    },
+}
+
+HI.enchantOverridePatterns = { "%(.+%)$" }
+
+HI.engineSmartBindOverrides = {
+    damage_to_heal = {
+        LeftButton = {
+            { name = "Smite", priority = 1 },
+            { name = "Holy Fire", priority = 2 },
+            { name = "Flash Heal", priority = 3 },
+            { name = "Flash of Light", priority = 4 },
+        },
+        RightButton = {
+            { name = "Penance", priority = 1 },
+            { name = "Rejuvenation", priority = 2 },
+            { name = "Renew", priority = 3 },
+        },
+        Button4 = {
+            { name = "Power Word: Shield", priority = 1 },
+        },
+    },
+    hot_maintenance = {
+        RightButton = {
+            { name = "Riptide", priority = 1 },
+            { name = "Rejuvenation", priority = 2 },
+            { name = "Renew", priority = 3 },
+            { name = "Lifebloom", priority = 4 },
+        },
+        MiddleButton = {
+            { name = "Wild Growth", priority = 1 },
+            { name = "Chain Heal", priority = 2 },
+        },
+    },
+    absorb_shield = {
+        Button4 = {
+            { name = "Power Word: Shield", priority = 1 },
+            { name = "Dominant Word: Shield", priority = 1 },
+            { name = "Sacred Shield", priority = 2 },
+        },
+        LeftButton = {
+            { name = "Flash Heal", priority = 1 },
+            { name = "Flash of Light", priority = 2 },
+        },
+    },
+}
+
+HI.maintenanceAurasByEngine = {
+    hot_maintenance = { "Riptide", "Rejuvenation", "Renew", "Lifebloom", "Wild Growth", "Regrowth" },
+    damage_to_heal = { "Grace", "Atonement" },
+    absorb_shield = { "Power Word: Shield", "Borrowed Time", "Divine Aegis" },
 }
 
 HI.meta = HI.meta or {}

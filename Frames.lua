@@ -128,6 +128,7 @@ local function CreateAuraIndicator(parent, point, x, y)
     anim:SetLooping("REPEAT")
     anim:Play()
     f.glowAnim = anim
+    glow:Hide()
 
     local icon = f:CreateTexture(nil, "ARTWORK")
     icon:SetAllPoints()
@@ -230,8 +231,8 @@ local function LayoutAuraIndicators(button, isGrid, cfg)
     local center = button.auraIndicators.center
     if center then
         center:ClearAllPoints()
-        center:SetPoint("CENTER", button, "CENTER", 0, 0)
-        center:SetSize(iconSize + 4, iconSize + 4)
+        center:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -1)
+        center:SetSize(iconSize, iconSize)
     end
 end
 
@@ -930,8 +931,31 @@ function Frames:UpdateButton(b)
         b.roleIcon:SetTexture("Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES")
         b.roleIcon:SetTexCoord(0, 19/64, 22/64, 41/64)
         b.roleIcon:Show()
+    elseif not fake and unit and UnitIsUnit(unit, "player") and ns.RoleInference and ns.RoleInference.IsHealer and ns.RoleInference:IsHealer() then
+        b.roleIcon:SetTexture("Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES")
+        b.roleIcon:SetTexCoord(19/64, 38/64, 22/64, 41/64)
+        b.roleIcon:Show()
     else
         b.roleIcon:Hide()
+    end
+
+    -- Threshold Glow
+    local thresholdGlowActive = false
+    if not fake and unit and ns.BuildState and ns.BuildState.GetThresholdRules then
+        local rules = ns.BuildState:GetThresholdRules()
+        if rules and #rules > 0 then
+            local hpPct = (maxhp > 0) and (hp / maxhp) or 1
+            for _, rule in ipairs(rules) do
+                if hpPct <= rule.hpPct then
+                    thresholdGlowActive = true
+                    break
+                end
+            end
+        end
+    end
+    if thresholdGlowActive and not (debuff and debuff.dtype and dbf.highlightCurableDebuffs) then
+        b.glow:SetBorderColor(0.2, 0.8, 1.0, 0.8)
+        b.glow:Show()
     end
 
     -- Threat Indicator

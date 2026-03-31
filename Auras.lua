@@ -19,9 +19,9 @@ local fallbackTrackedAuras = {
         "Glimmer of Light", "Beacon of Virtue", "Blessed Recovery"
     },
     bottomleft = { 17, 48066, 47753, 552, 8936, "Shields of Dominance", "Dominant Word: Shield" },
-    topright = { 33076, 974, 53563, 48438, "Sheath of Light", "Improved Power Word: Shield", "Borrowed Time" },
+    topright = { 33076, 53563, 48438, "Sheath of Light", "Improved Power Word: Shield", "Borrowed Time" },
     bottomright = { 2893, 6346, 33206, 47788 },
-    center = { 53563, 974, "Beacon of Light", "Beacon of Virtue" },
+    center = { 53563, 974, "Beacon of Light", "Beacon of Virtue", "Earth Shield", "Sacred Shield" },
 }
 
 local function getSampleBucket()
@@ -138,6 +138,19 @@ local function rebuildTrackedNames()
     if type(centerList) == "table" then
         for _, entry in ipairs(centerList) do addCenterEntry(entry) end
     end
+    if ns.BuildState and ns.BuildState.GetMaintenanceAuras then
+        local maint = ns.BuildState:GetMaintenanceAuras()
+        for lname, displayName in pairs(maint) do
+            local isSpecial = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield")
+            if not hotPriorityNames[lname] and not isSpecial then
+                addHotEntry(displayName, 1)
+            end
+        end
+    end
+end
+
+function Auras:RebuildTrackedNames()
+    rebuildTrackedNames()
 end
 
 local function hasTrackedData()
@@ -170,11 +183,13 @@ collectActiveAuras = function(unit)
     if not hasTrackedData() then rebuildTrackedNames() end
 
     local hotBuckets = {}
+    local foundAuras = {}
     for i = 1, 40 do
         local name, _, icon, count, _, duration, expirationTime, caster, _, _, spellId = UnitAura(unit, i, "HELPFUL")
         if not name then break end
-
         local lname = string.lower(name)
+        foundAuras[lname] = true
+
         local isMine = false
         if caster then
             if UnitIsUnit(caster, "player") or UnitIsUnit(caster, "pet") or caster == "player" or caster == "pet" then
@@ -182,29 +197,69 @@ collectActiveAuras = function(unit)
             end
         end
 
-        local priority = (spellId and hotPriorityIds[spellId]) or hotPriorityNames[lname]
-        if priority and priority <= 4 and isMine then
-            hotBuckets[priority] = hotBuckets[priority] or {}
-            table.insert(hotBuckets[priority], { icon = icon, count = count, duration = duration, expires = expirationTime })
-        end
-
+        -- Special/Center Indicator (Beacon, Earth Shield, etc.)
         local isCenter = (spellId and centerIds[spellId]) or centerNames[lname]
         if isCenter and (isMine or lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield") then
-            active.center = { icon = icon, count = count, duration = duration, expires = expirationTime }
+            active.center = { 
+                icon = icon, count = count, duration = duration, expires = expirationTime, 
+                isMine = isMine 
+            }
+        end
+
+        -- Corner Indicators (hotList)
+        local priority = (spellId and hotPriorityIds[spellId]) or hotPriorityNames[lname]
+        -- CRITICAL: Only track MY OWN hots in corners, and exclude special/topright spells (Beacon/Earth Shield)
+        local isSpecial = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield")
+        if priority and priority <= 4 and isMine and not isSpecial then
+            hotBuckets[priority] = hotBuckets[priority] or {}
+            table.insert(hotBuckets[priority], { 
+                icon = icon, count = count, duration = duration, expires = expirationTime, 
+                isMine = true 
+            })
         end
     end
 
-    local maxSlots = 4
+    -- Add Ghost Indicators for missing maintenance auras
+    if ns.BuildState and ns.BuildState.GetMaintenanceAuras then
+        local maint = ns.BuildState:GetMaintenanceAuras()
+        for lname, displayName in pairs(maint) do
+            local isSpecial = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield")
+            if not foundAuras[lname] then
+                if isSpecial then
+                    if not active.center then
+                        local spellIcon = select(3, GetSpellInfo(displayName)) or "Interface\\Icons\\INV_Misc_QuestionMark"
+                        active.center = { 
+                            icon = spellIcon, count = 0, duration = 0, expires = 0, 
+                            ghost = true, isMine = true 
+                        }
+                    end
+                else
+                    local priority = hotPriorityNames[lname]
+                    if priority and priority <= 4 then
+                        local spellIcon = select(3, GetSpellInfo(displayName)) or "Interface\\Icons\\INV_Misc_QuestionMark"
+                        hotBuckets[priority] = hotBuckets[priority] or {}
+                        table.insert(hotBuckets[priority], { 
+                            icon = spellIcon, count = 0, duration = 0, expires = 0, 
+                            ghost = true, isMine = true 
+                        })
+                    end
+                end
+            end
+        end
+    end
+
+    -- Populate hotList from buckets
     for prio = 1, 4 do
         local bucket = hotBuckets[prio]
         if bucket then
             for _, entry in ipairs(bucket) do
                 table.insert(active.hotList, entry)
-                if #active.hotList >= maxSlots then break end
+                if #active.hotList >= 4 then break end
             end
         end
-        if #active.hotList >= maxSlots then break end
+        if #active.hotList >= 4 then break end
     end
+
     if UnitIsUnit(unit, "player") and ns.Roster and ns.Roster.fakeIcons then
         local guid = UnitGUID(unit)
         if guid and ns.Roster.fakeIcons[guid] then
@@ -386,6 +441,18 @@ function Auras:UpdateButtonAuras(btn, cached)
         if data then
             ind.icon:SetTexture(data.icon)
             ind.countText:SetText((data.count and data.count > 1) and data.count or "")
+
+            -- Mine vs Others Distinction
+            if data.isMine then
+                ind.icon:SetVertexColor(1, 1, 1, 1)
+                if ind.glow then
+                    if data.ghost then ind.glow:Hide() else ind.glow:Show() end
+                end
+            else
+                ind.icon:SetVertexColor(0.6, 0.6, 0.6, 0.8) -- Dimmed for others
+                if ind.glow then ind.glow:Hide() end
+            end
+
             if data.duration and data.duration > 0 and data.expires and data.expires > 0 then
                 ind.cd:SetCooldown(data.expires - data.duration, data.duration)
                 ind.cd:Show()

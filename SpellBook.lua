@@ -116,9 +116,13 @@ function SpellBook:Scan(force)
 
                 local entry = {
                     name = name, rank = rank or "", slot = slot, role = guessedRole, link = link,
+                    spellId = link and ns.Compat:GetSpellIdFromLink(link) or nil,
                     texture = ns.Compat:GetSpellTexture(slot),
                     isPassive = isPassive, isTrade = isTrade, isGeneral = isGeneral,
                 }
+                if ns.EnchantDetect then
+                    ns.EnchantDetect:ClassifyEntry(entry)
+                end
                 table.insert(self.raw, entry)
                 
                 if not (opts.excludeGeneral and entry.isGeneral) and not (entry.isPassive) and not (opts.excludeProfessions and entry.isTrade) then
@@ -156,8 +160,15 @@ function SpellBook:Scan(force)
     for _, e in ipairs(self.bindable) do if e.role == "heal" or e.role == "hot" or e.role == "shield_absorb" then self.stats.healing = self.stats.healing + 1 end end
     
     if force then ns:Print(string.format("Scan complete: %d spells (%d healing)", self.stats.bindable, self.stats.healing)) end
+
+    if ns.EnchantDetect then ns.EnchantDetect:FullScan() end
+    if ns.BuildState then ns.BuildState:Classify() end
 end
 
 function SpellBook:OnInitialize() end
 function SpellBook:OnEnable() C_Timer.After(5, function() self:Scan(true) end) end
-function SpellBook:OnEvent(event) end
+function SpellBook:OnEvent(event)
+    if event == "LEARNED_SPELL_IN_TAB" or event == "SPELLS_CHANGED" or event == "PLAYER_TALENT_UPDATE" or event == "CHARACTER_POINTS_CHANGED" then
+        self:Scan()
+    end
+end

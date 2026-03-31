@@ -154,11 +154,16 @@ function Bindings:SmartBind()
     end
 
     local intel = ns.HealingIntel or {}
-    local prioritiesMap = intel.smartBindPriorities
-    local usingFallbackPriorities = false
+    local prioritiesMap = nil
+
+    if ns.BuildState and ns.BuildState.GetSmartBindOverrides then
+        prioritiesMap = ns.BuildState:GetSmartBindOverrides()
+    end
+    if not prioritiesMap then
+        prioritiesMap = intel.smartBindPriorities
+    end
     if not prioritiesMap then
         prioritiesMap = fallbackSmartBindPriorities
-        usingFallbackPriorities = true
         ns:Print("SmartBind priorities missing. Using built-in fallback map.")
         ns:Debug("SmartBind fallback active", true)
     end
@@ -176,22 +181,22 @@ function Bindings:SmartBind()
 
     for _, spell in ipairs(bindable) do
         local name = spell.name
-        knownSpells[name:lower()] = name
-        normalizedKnown[normalize(name)] = name
+        local resolved = name
+        if ns.EnchantDetect and ns.EnchantDetect.GetResolvedSpellName then
+            resolved = ns.EnchantDetect:GetResolvedSpellName(name) or name
+        end
+        knownSpells[name:lower()] = resolved
+        knownSpells[resolved:lower()] = resolved
+        normalizedKnown[normalize(name)] = resolved
+        normalizedKnown[normalize(resolved)] = resolved
     end
 
+    wipe(ns.DB.bindings)
+
     local usedSpells = {}
-    for _, slot in ipairs(orderedSlots) do
-        local rec = self:Get(slot)
-        if rec and rec.type == "spell" and not isEmpty(rec) then
-            usedSpells[rec.value:lower()] = true
-            ns:Debug("SmartBind: Slot " .. slot .. " reserved by " .. rec.value, true)
-        end
-    end
 
     local changesMade = 0
 
-    -- Cleanse logic
     local caps = ns.SpellBook and ns.SpellBook.dispelCapabilities
     if caps and (caps.Magic or caps.Curse or caps.Disease or caps.Poison) then
         local cleanseSlot = nil
@@ -208,6 +213,7 @@ function Bindings:SmartBind()
                 local rec = self:Get(cleanseSlot)
                 rec.type = "macro"
                 rec.value = "/cast [@mouseover,help,nodead][] " .. bestCleanse
+                usedSpells[bestCleanse:lower()] = true
                 ns:Print("SmartBind: Assigned Cleanse to " .. cleanseSlot)
                 changesMade = changesMade + 1
             end
@@ -217,20 +223,16 @@ function Bindings:SmartBind()
     for _, slot in ipairs(orderedSlots) do
         local priorities = prioritiesMap[slot]
         if priorities then
-            local current = self:Get(slot)
-            if isEmpty(current) then
-                for _, candidate in ipairs(priorities) do
-                    local cname = candidate.name
-                    local exactName = knownSpells[cname:lower()] or normalizedKnown[normalize(cname)]
+            for _, candidate in ipairs(priorities) do
+                local cname = candidate.name
+                local exactName = knownSpells[cname:lower()] or normalizedKnown[normalize(cname)]
 
-                    if exactName and not usedSpells[exactName:lower()] then
-                        current.type = "spell"
-                        current.value = exactName
-                        usedSpells[exactName:lower()] = true
-                        ns:Print("SmartBind: Assigned " .. exactName .. " to " .. slot)
-                        changesMade = changesMade + 1
-                        break
-                    end
+                if exactName and not usedSpells[exactName:lower()] then
+                    self:SetBinding(slot, "spell", exactName)
+                    usedSpells[exactName:lower()] = true
+                    ns:Print("SmartBind: Assigned " .. exactName .. " to " .. slot)
+                    changesMade = changesMade + 1
+                    break
                 end
             end
         end
@@ -240,5 +242,6 @@ function Bindings:SmartBind()
     if changesMade > 0 then
         if ns.ClickCast then ns.ClickCast:RefreshAll() end
         if ns.UI_Bindings then ns.UI_Bindings:RefreshSlots() end
+        if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
     end
 end

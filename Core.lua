@@ -114,6 +114,7 @@ local function EnsureSaved()
     PB_HF_Global = PB_HF_Global or {}
     PB_HF_Global.auraSamples = PB_HF_Global.auraSamples or {}
     if PB_HF_Global.auraSamplingEnabled == nil then PB_HF_Global.auraSamplingEnabled = false end
+    PB_HF_Global.roleVector = PB_HF_Global.roleVector or { healer = 0, support = 0, dps = 0 }
 end
 
 function ns:SetEnabled(v)
@@ -162,7 +163,8 @@ local events = {
     "PARTY_MEMBERS_CHANGED", "RAID_ROSTER_UPDATE", 
     "UNIT_HEALTH", "UNIT_MAXHEALTH", "UNIT_AURA", "UNIT_POWER", "UNIT_DISPLAYPOWER",
     "LEARNED_SPELL_IN_TAB", "PLAYER_TALENT_UPDATE", "SKILL_LINES_CHANGED", "CHARACTER_POINTS_CHANGED", "SPELLS_CHANGED",
-    "PLAYER_REGEN_ENABLED", "PLAYER_TARGET_CHANGED", "PLAYER_FOCUS_CHANGED", "RAID_TARGET_UPDATE"
+    "PLAYER_REGEN_ENABLED", "PLAYER_TARGET_CHANGED", "PLAYER_FOCUS_CHANGED", "RAID_TARGET_UPDATE",
+    "COMBAT_LOG_EVENT_UNFILTERED", "PLAYER_REGEN_DISABLED"
  }
 for _, ev in ipairs(events) do frame:RegisterEvent(ev) end
 

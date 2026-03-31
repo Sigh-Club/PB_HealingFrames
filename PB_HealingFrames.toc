@@ -13,6 +13,10 @@ Intelligence/Init.lua
 Intelligence/Data_Seed.lua
 Locales/enUS.lua
 SpellBook.lua
+CombatLog.lua
+EnchantDetect.lua
+BuildState.lua
+RoleInference.lua
 Bindings.lua
 Roster.lua
 Auras.lua
