@@ -141,8 +141,10 @@ local function rebuildTrackedNames()
     if ns.BuildState and ns.BuildState.GetMaintenanceAuras then
         local maint = ns.BuildState:GetMaintenanceAuras()
         for lname, displayName in pairs(maint) do
-            local isSpecial = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield")
-            if not hotPriorityNames[lname] and not isSpecial then
+            local isSpecial = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield" or lname == "low tide")
+            if isSpecial then
+                addCenterEntry(displayName)
+            elseif not hotPriorityNames[lname] then
                 addHotEntry(displayName, 1)
             end
         end
@@ -199,7 +201,8 @@ collectActiveAuras = function(unit)
 
         -- Special/Center Indicator (Beacon, Earth Shield, etc.)
         local isCenter = (spellId and centerIds[spellId]) or centerNames[lname]
-        if isCenter and (isMine or lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield") then
+        local isSpecialSpell = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield" or lname == "low tide")
+        if isCenter and (isMine or isSpecialSpell) then
             active.center = { 
                 icon = icon, count = count, duration = duration, expires = expirationTime, 
                 isMine = isMine 
@@ -209,7 +212,7 @@ collectActiveAuras = function(unit)
         -- Corner Indicators (hotList)
         local priority = (spellId and hotPriorityIds[spellId]) or hotPriorityNames[lname]
         -- CRITICAL: Only track MY OWN hots in corners, and exclude special/topright spells (Beacon/Earth Shield)
-        local isSpecial = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield")
+        local isSpecial = isSpecialSpell
         if priority and priority <= 4 and isMine and not isSpecial then
             hotBuckets[priority] = hotBuckets[priority] or {}
             table.insert(hotBuckets[priority], { 
@@ -223,7 +226,7 @@ collectActiveAuras = function(unit)
     if ns.BuildState and ns.BuildState.GetMaintenanceAuras then
         local maint = ns.BuildState:GetMaintenanceAuras()
         for lname, displayName in pairs(maint) do
-            local isSpecial = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield")
+            local isSpecial = (lname == "beacon of light" or lname == "earth shield" or lname == "sacred shield" or lname == "low tide")
             if not foundAuras[lname] then
                 if isSpecial then
                     if not active.center then

@@ -468,7 +468,7 @@ local function CreateButton(i)
 
     local raidIcon = inter:CreateTexture(nil, "OVERLAY")
     raidIcon:SetSize(16, 16)
-    raidIcon:SetPoint("TOPLEFT", b, "TOPLEFT", -6, 6)
+    raidIcon:SetPoint("TOPLEFT", b, "TOPLEFT", 2, -2)
     raidIcon:SetTexture("Interface\\TARGETINGFRAME\\UI-RaidTargetingIcons")
     raidIcon:Hide()
     b.raidIcon = raidIcon
@@ -669,10 +669,9 @@ function Frames:ApplyLayout()
         LayoutAuraIndicators(b, isGrid, cfg)
 
         local raidSize = dbf.raidIconSize or 16
-        local raidOffset = math.floor(raidSize * 0.4)
         b.raidIcon:ClearAllPoints()
         b.raidIcon:SetSize(raidSize, raidSize)
-        b.raidIcon:SetPoint("TOPLEFT", b, "TOPLEFT", -raidOffset, raidOffset)
+        b.raidIcon:SetPoint("TOPLEFT", b, "TOPLEFT", 2, -2)
 
         local nfs = dbf.nameFontSize or 10
         local sfs = dbf.statusFontSize or 8
