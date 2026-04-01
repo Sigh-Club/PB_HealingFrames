@@ -277,30 +277,6 @@ function UI:LoadLayout(c)
 
     y = y - 50
 
-    local posHeader = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    posHeader:SetPoint("TOPLEFT", 15, y); posHeader:SetText("--- Global Position ---")
-    y = y - 35
-
-    c.posX = mkSlider(c, "X Offset", 0, 2000, 1, function() return ns.DB.frame.x or 400 end, function(v) 
-        ns.DB.frame.x = v
-        local key = ns.Frames:GetActiveAnchorKey()
-        ns.DB.frame.anchorPositions = ns.DB.frame.anchorPositions or {}
-        ns.DB.frame.anchorPositions[key] = ns.DB.frame.anchorPositions[key] or {}
-        ns.DB.frame.anchorPositions[key].x = v
-        if ns.Frames then ns.Frames:RefreshContainerPosition(true) end 
-    end)
-    c.posX:SetPoint("TOPLEFT", 15, y); c.posX:SetWidth(180)
-
-    c.posY = mkSlider(c, "Y Offset", 0, 1200, 1, function() return ns.DB.frame.y or 400 end, function(v) 
-        ns.DB.frame.y = v
-        local key = ns.Frames:GetActiveAnchorKey()
-        ns.DB.frame.anchorPositions = ns.DB.frame.anchorPositions or {}
-        ns.DB.frame.anchorPositions[key] = ns.DB.frame.anchorPositions[key] or {}
-        ns.DB.frame.anchorPositions[key].y = v
-        if ns.Frames then ns.Frames:RefreshContainerPosition(true) end 
-    end)
-    c.posY:SetPoint("TOPLEFT", 280, y); c.posY:SetWidth(180); y = y - 65
-
     local barHeader = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     barHeader:SetPoint("TOPLEFT", 15, y); barHeader:SetText("--- Bar Mode Settings ---")
     c.barHeader = barHeader
