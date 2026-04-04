@@ -415,12 +415,12 @@ function Auras:UpdateButtonAuras(btn, cached)
         if data then
             ind.icon:SetTexture(data.icon)
             ind.countText:SetText((data.count and data.count > 1) and data.count or "")
+            ind.icon:Show()
 
             local brightness = ns.DB and ns.DB.frame and ns.DB.frame.hotIndicatorBrightness or 0.65
-            local dimAlpha = 0.4 + (brightness * 0.6)
+            local alpha = 0.3 + (brightness * 0.7)
 
             if ind.fill then
-                ind.icon:Show()
                 if data.duration and data.duration > 0 and data.expires and data.expires > 0 then
                     local remain = data.expires - GetTime()
                     local pct = math.max(0, math.min(1, remain / data.duration))
@@ -439,21 +439,19 @@ function Auras:UpdateButtonAuras(btn, cached)
                     ind.fill:Show()
                 end
             else
-                ind.icon:SetVertexColor(1, 1, 1, dimAlpha)
+                ind.icon:SetVertexColor(1, 1, 1, alpha)
             end
 
-            if data.isMine then
-                if not ind.fill then
-                    ind.icon:SetVertexColor(1, 1, 1, dimAlpha)
+            if not data.isMine then
+                if ind.fill then
+                    ind.fill:SetVertexColor(0.5, 0.5, 0.5, alpha * 0.7)
+                else
+                    ind.icon:SetVertexColor(0.6, 0.6, 0.6, alpha * 0.6)
                 end
-                if ind.glow then
-                    if data.ghost then ind.glow:Hide() else ind.glow:Show() end
-                end
-            else
-                if not ind.fill then
-                    ind.icon:SetVertexColor(0.6, 0.6, 0.6, dimAlpha * 0.7)
-                end
-                if ind.glow then ind.glow:Hide() end
+            end
+
+            if ind.glow then
+                if data.isMine and not data.ghost then ind.glow:Show() else ind.glow:Hide() end
             end
 
             if data.duration and data.duration > 0 and data.expires and data.expires > 0 then

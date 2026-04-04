@@ -169,10 +169,9 @@ local function CreateHotIndicatorBox(parent, point, x, y)
     bg:SetVertexColor(0, 0, 0, 0.85)
     f.bg = bg
 
-    local icon = f:CreateTexture(nil, "ARTWORK")
-    icon:SetPoint("TOPLEFT", 1, -1)
-    icon:SetPoint("BOTTOMRIGHT", -1, 1)
-    icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    local icon = f:CreateTexture(nil, "OVERLAY")
+    icon:SetAllPoints()
+    icon:SetTexCoord(0, 1, 0, 1)
     icon:Hide()
     f.icon = icon
 
