@@ -500,7 +500,7 @@ function UI:LoadStyle(c)
     UIDropDownMenu_SetWidth(hotStyleDD, 140)
     UIDropDownMenu_SetText(hotStyleDD, (ns.DB.frame.hotIndicatorStyle or "classic") == "classic" and "Classic (Icons)" or "Squares (Boxes)")
 
-    y = y - 30
+    y = y - 40
     local hotBrightSlider = mkSlider(c, "HOT Box Brightness", 0.2, 1.5, 0.05,
         function() return ns.DB.frame.hotIndicatorBrightness or 1.0 end,
         function(v)
@@ -514,7 +514,7 @@ function UI:LoadStyle(c)
     hotBrightSlider:SetPoint("TOPLEFT", 15, y)
     hotBrightSlider:SetWidth(180)
 
-    y = y - 35
+    y = y - 50
 
     local th3 = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     th3:SetPoint("TOPLEFT", 15, y); th3:SetText("--- Name Options ---"); y = y - 35

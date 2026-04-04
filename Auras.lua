@@ -422,7 +422,15 @@ function Auras:UpdateButtonAuras(btn, cached)
                 if data.duration and data.duration > 0 and data.expires and data.expires > 0 then
                     local remain = data.expires - GetTime()
                     local pct = math.max(0, math.min(1, remain / data.duration))
-                    ind.fill:SetVertexColor((pct < 0.25 and 1 or (pct < 0.5 and 1)) * brightness, (pct < 0.25 and 0.15 or (pct < 0.5 and 0.8)) * brightness, (pct < 0.25 and 0.15 or 0.25) * brightness, 0.8)
+                    local r, g, b
+                    if pct < 0.25 then
+                        r, g, b = 1, 0.15, 0.15
+                    elseif pct < 0.5 then
+                        r, g, b = 1, 0.8, 0.25
+                    else
+                        r, g, b = 1, 1, 0.25
+                    end
+                    ind.fill:SetVertexColor(r * brightness, g * brightness, b * brightness, 0.8)
                     ind.fill:Show()
                 else
                     ind.fill:SetVertexColor(0.2 * brightness, 0.85 * brightness, 0.25 * brightness, 0.7)
