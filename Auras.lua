@@ -418,13 +418,14 @@ function Auras:UpdateButtonAuras(btn, cached)
 
             if ind.fill then
                 ind.icon:Show()
+                local brightness = ns.DB and ns.DB.frame and ns.DB.frame.hotIndicatorBrightness or 1.0
                 if data.duration and data.duration > 0 and data.expires and data.expires > 0 then
                     local remain = data.expires - GetTime()
                     local pct = math.max(0, math.min(1, remain / data.duration))
-                    ind.fill:SetVertexColor(pct < 0.25 and 1 or (pct < 0.5 and 1), pct < 0.25 and 0.15 or (pct < 0.5 and 0.8), pct < 0.25 and 0.15 or 0.25, 0.8)
+                    ind.fill:SetVertexColor((pct < 0.25 and 1 or (pct < 0.5 and 1)) * brightness, (pct < 0.25 and 0.15 or (pct < 0.5 and 0.8)) * brightness, (pct < 0.25 and 0.15 or 0.25) * brightness, 0.8)
                     ind.fill:Show()
                 else
-                    ind.fill:SetVertexColor(0.2, 0.85, 0.25, 0.7)
+                    ind.fill:SetVertexColor(0.2 * brightness, 0.85 * brightness, 0.25 * brightness, 0.7)
                     ind.fill:Show()
                 end
             end

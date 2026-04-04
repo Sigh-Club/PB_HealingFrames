@@ -39,6 +39,7 @@ local function defaults()
             raidIconSize = 16,
             hotIndicatorStyle = "classic",
             auraIndicatorSize = 14,
+            hotIndicatorBrightness = 1.0,
             nameFontSize = 10,
             nameOffsetX = 0,
             nameOffsetY = 0,
