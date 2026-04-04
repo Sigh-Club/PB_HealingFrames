@@ -231,8 +231,8 @@ local function LayoutAuraIndicators(button, isGrid, cfg)
     local center = button.auraIndicators.center
     if center then
         center:ClearAllPoints()
-        center:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -1)
-        center:SetSize(iconSize, iconSize)
+        center:SetPoint("TOPRIGHT", button, "TOPRIGHT", 5, 5)
+        center:SetSize(iconSize + 2, iconSize + 2)
     end
 end
 
@@ -468,7 +468,7 @@ local function CreateButton(i)
 
     local raidIconFrame = CreateFrame("Frame", nil, b)
     raidIconFrame:SetSize(16, 16)
-    raidIconFrame:SetPoint("TOPLEFT", b, "TOPLEFT", -10, 10)
+    raidIconFrame:SetPoint("TOPLEFT", b, "TOPLEFT", -5, 5)
     local raidIcon = raidIconFrame:CreateTexture(nil, "OVERLAY")
     raidIcon:SetAllPoints()
     raidIcon:SetTexture("Interface\\TARGETINGFRAME\\UI-RaidTargetingIcons")
@@ -486,9 +486,9 @@ local function CreateButton(i)
         topright = CreateAuraIndicator(inter, "CENTER", 0, 0),
         bottomleft = CreateAuraIndicator(inter, "CENTER", 0, 0),
         bottomright = CreateAuraIndicator(inter, "CENTER", 0, 0),
-        center = CreateAuraIndicator(b, "TOPRIGHT", 10, 10),
+        center = CreateAuraIndicator(b, "TOPRIGHT", 5, 5),
     }
-    b.auraIndicators.center:SetSize(20, 20)
+    b.auraIndicators.center:SetSize(18, 18)
     b.auraIndicators.center.icon:SetTexCoord(0, 1, 0, 1) -- Fuller icon for center
     b.auraIndicators.center:SetFrameLevel(b:GetFrameLevel() + 25)
     b.raidIconFrame:SetFrameLevel(b:GetFrameLevel() + 25)
@@ -675,7 +675,7 @@ function Frames:ApplyLayout()
         local raidSize = dbf.raidIconSize or 16
         b.raidIconFrame:ClearAllPoints()
         b.raidIconFrame:SetSize(raidSize, raidSize)
-        b.raidIconFrame:SetPoint("TOPLEFT", b, "TOPLEFT", -10, 10)
+        b.raidIconFrame:SetPoint("TOPLEFT", b, "TOPLEFT", -5, 5)
 
         local nfs = dbf.nameFontSize or 10
         local sfs = dbf.statusFontSize or 8
