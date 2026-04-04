@@ -481,7 +481,7 @@ function UI:LoadStyle(c)
         info.func = function()
             ns.DB.frame.hotIndicatorStyle = "classic"
             UIDropDownMenu_SetText(hotStyleDD, "Classic (Icons)")
-            UIDropDownMenu_CloseMenu()
+            CloseDropDownMenus()
             if ns.Frames then ns.Frames:ApplyLayout() end
         end
         UIDropDownMenu_AddButton(info)
@@ -492,7 +492,7 @@ function UI:LoadStyle(c)
         info.func = function()
             ns.DB.frame.hotIndicatorStyle = "squares"
             UIDropDownMenu_SetText(hotStyleDD, "Squares (Boxes)")
-            UIDropDownMenu_CloseMenu()
+            CloseDropDownMenus()
             if ns.Frames then ns.Frames:ApplyLayout() end
         end
         UIDropDownMenu_AddButton(info)
