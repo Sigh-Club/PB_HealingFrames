@@ -170,9 +170,6 @@ function BuildState:Classify(silent)
     self.thresholdRules = deriveThresholdRules()
 
     if changed and newMode ~= "unknown" then
-        -- if not silent then
-        --     ns:Print("Build engine detected: " .. newMode:gsub("_", " ") .. ". SmartBind updated.")
-        -- end
         if ns.Bindings and ns.Bindings.SmartBind then
             ns.Bindings:SmartBind(silent)
         end

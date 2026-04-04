@@ -95,7 +95,6 @@ end
 
 function Bindings:SetBinding(slot, btype, value)
     ns.DB.bindings[slot] = { type = btype, value = value }
-    -- ns:Print((ns.L and ns.L.STATUS_BINDING_SET or "Binding updated") .. ": " .. slot .. " -> " .. (value ~= "" and value or btype))
     if ns.ClickCast then ns.ClickCast:RefreshAll() end
     if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
 end
@@ -122,7 +121,6 @@ end
 
 function Bindings:Clear(slot)
     ns.DB.bindings[slot] = nil
-    -- ns:Print((ns.L and ns.L.STATUS_BINDING_CLEARED or "Binding cleared") .. ": " .. slot)
     if ns.ClickCast then ns.ClickCast:RefreshAll() end
     if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
 end
@@ -148,7 +146,6 @@ end
 function Bindings:SmartBind(silent)
     ns:Debug("SmartBind: Starting...", true)
     if InCombatLockdown() then
-        -- if not silent then ns:Print("Cannot smart bind while in combat.") end
         ns:Debug("SmartBind failed: Player in combat", true)
         return
     end
@@ -164,14 +161,12 @@ function Bindings:SmartBind(silent)
     end
     if not prioritiesMap then
         prioritiesMap = fallbackSmartBindPriorities
-        -- if not silent then ns:Print("SmartBind priorities missing. Using built-in fallback map.") end
         ns:Debug("SmartBind fallback active", true)
     end
 
     local bindable = (ns.SpellBook and ns.SpellBook.GetBindable and ns.SpellBook:GetBindable()) or {}
     ns:Debug("SmartBind: Bindable spells count: " .. #bindable, true)
     if #bindable == 0 then
-        -- if not silent then ns:Print("SmartBind failed: No bindable spells found. Run /pb scan first.") end
         return
     end
 
@@ -214,7 +209,6 @@ function Bindings:SmartBind(silent)
                 rec.type = "macro"
                 rec.value = "/cast [@mouseover,help,nodead][] " .. bestCleanse
                 usedSpells[bestCleanse:lower()] = true
-                -- if not silent then ns:Print("SmartBind: Assigned Cleanse to " .. cleanseSlot) end
                 changesMade = changesMade + 1
             end
         end
@@ -230,7 +224,6 @@ function Bindings:SmartBind(silent)
                 if exactName and not usedSpells[exactName:lower()] then
                     self:SetBinding(slot, "spell", exactName)
                     usedSpells[exactName:lower()] = true
-                    -- if not silent then ns:Print("SmartBind: Assigned " .. exactName .. " to " .. slot) end
                     changesMade = changesMade + 1
                     break
                 end
@@ -238,7 +231,6 @@ function Bindings:SmartBind(silent)
         end
     end
 
-    -- if not silent then ns:Print(string.format("SmartBind finished. Changes=%d", changesMade)) end
     if changesMade > 0 then
         if ns.ClickCast then ns.ClickCast:RefreshAll() end
         if ns.UI_Bindings then ns.UI_Bindings:RefreshSlots() end

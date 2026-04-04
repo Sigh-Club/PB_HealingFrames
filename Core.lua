@@ -29,12 +29,12 @@ function ns:IterModules(method, ...)
 end
 
 function ns:Print(msg)
-    local f = DEFAULT_CHAT_FRAME or ChatFrame1
-    if f then
-        f:AddMessage("|cff7cc7ffPB:HF|r: "..tostring(msg))
-    else
-        print("PB:HF: "..tostring(msg))
-    end
+    -- local f = DEFAULT_CHAT_FRAME or ChatFrame1
+    -- if f then
+    --     f:AddMessage("|cff7cc7ffPB:HF|r: "..tostring(msg))
+    -- else
+    --     print("PB:HF: "..tostring(msg))
+    -- end
 end
 
 ns.secureQueue = {}
@@ -134,8 +134,6 @@ local function Bootstrap()
     EnsureSaved()
     ns:IterModules("OnInitialize")
     ns:IterModules("OnEnable")
-    local status = ns.DB.enabled and "" or " (|cffff4444Disabled|r)"
-    -- ns:Print("V 1.3.5 beta loaded. Type /pb for config." .. status)
 end
 
 local frame = CreateFrame("Frame")

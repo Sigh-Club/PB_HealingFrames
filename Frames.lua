@@ -466,12 +466,15 @@ local function CreateButton(i)
     roleIcon:Hide()
     b.roleIcon = roleIcon
 
-    local raidIcon = inter:CreateTexture(nil, "OVERLAY")
-    raidIcon:SetSize(16, 16)
-    raidIcon:SetPoint("TOPLEFT", b, "TOPLEFT", -8, 8)
+    local raidIconFrame = CreateFrame("Frame", nil, b)
+    raidIconFrame:SetSize(16, 16)
+    raidIconFrame:SetPoint("TOPLEFT", b, "TOPLEFT", -10, 10)
+    local raidIcon = raidIconFrame:CreateTexture(nil, "OVERLAY")
+    raidIcon:SetAllPoints()
     raidIcon:SetTexture("Interface\\TARGETINGFRAME\\UI-RaidTargetingIcons")
-    raidIcon:Hide()
+    raidIconFrame:Hide()
     b.raidIcon = raidIcon
+    b.raidIconFrame = raidIconFrame
 
     local mana = CreateFrame("StatusBar", nil, b)
     mana:SetStatusBarTexture(STATUS_BAR_TEX)
@@ -483,11 +486,12 @@ local function CreateButton(i)
         topright = CreateAuraIndicator(inter, "CENTER", 0, 0),
         bottomleft = CreateAuraIndicator(inter, "CENTER", 0, 0),
         bottomright = CreateAuraIndicator(inter, "CENTER", 0, 0),
-        center = CreateAuraIndicator(inter, "TOPRIGHT", 8, 8),
+        center = CreateAuraIndicator(b, "TOPRIGHT", 10, 10),
     }
     b.auraIndicators.center:SetSize(20, 20)
     b.auraIndicators.center.icon:SetTexCoord(0, 1, 0, 1) -- Fuller icon for center
-    b.auraIndicators.center:SetFrameLevel(inter:GetFrameLevel() + 15)
+    b.auraIndicators.center:SetFrameLevel(b:GetFrameLevel() + 25)
+    b.raidIconFrame:SetFrameLevel(b:GetFrameLevel() + 25)
 
     LayoutAuraIndicators(b, false, ns.DB and ns.DB.frame and ns.DB.frame.bars or {})
 
@@ -669,9 +673,9 @@ function Frames:ApplyLayout()
         LayoutAuraIndicators(b, isGrid, cfg)
 
         local raidSize = dbf.raidIconSize or 16
-        b.raidIcon:ClearAllPoints()
-        b.raidIcon:SetSize(raidSize, raidSize)
-        b.raidIcon:SetPoint("TOPLEFT", b, "TOPLEFT", -8, 8)
+        b.raidIconFrame:ClearAllPoints()
+        b.raidIconFrame:SetSize(raidSize, raidSize)
+        b.raidIconFrame:SetPoint("TOPLEFT", b, "TOPLEFT", -10, 10)
 
         local nfs = dbf.nameFontSize or 10
         local sfs = dbf.statusFontSize or 8
@@ -1002,20 +1006,20 @@ function Frames:UpdateButton(b)
         end
         if iconIndex then
             SetRaidTargetIconTexture(b.raidIcon, iconIndex)
-            b.raidIcon:Show()
+            b.raidIconFrame:Show()
         else
-            b.raidIcon:Hide()
+            b.raidIconFrame:Hide()
         end
     elseif showRaidIcons then
         local iconIndex = b.fakeData and b.fakeData.raidIcon
         if iconIndex then
             SetRaidTargetIconTexture(b.raidIcon, iconIndex)
-            b.raidIcon:Show()
+            b.raidIconFrame:Show()
         else
-            b.raidIcon:Hide()
+            b.raidIconFrame:Hide()
         end
     else
-        b.raidIcon:Hide()
+        b.raidIconFrame:Hide()
     end
 
     local stText = status

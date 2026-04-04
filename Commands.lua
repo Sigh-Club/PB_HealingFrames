@@ -21,11 +21,11 @@ SlashCmdList["PBHF"] = function(msg)
             ns:Print("Error: UI module failed to load.") 
         end
     elseif msg == "on" then
-        ns:SetEnabled(true); ns:Print("Enabled.")
+        ns:SetEnabled(true)
     elseif msg == "off" then
-        ns:SetEnabled(false); ns:Print("Disabled.")
+        ns:SetEnabled(false)
     elseif msg == "toggle" then
-        ns:SetEnabled(not ns.DB.enabled); ns:Print(ns.DB.enabled and "Enabled." or "Disabled.")
+        ns:SetEnabled(not ns.DB.enabled)
     elseif msg == "scan" then
         if ns.SpellBook and ns.SpellBook.Scan then ns.SpellBook:Scan() end
     elseif msg == "smartbind" then
@@ -40,7 +40,7 @@ SlashCmdList["PBHF"] = function(msg)
     elseif msg:match("^debug") then
         local args = trim(msg:sub(6))
         if args == "" then
-            ns:Print("Usage: /pb debug [on|off|auras <unit>]")
+            -- ns:Print("Usage: /pb debug [on|off|auras <unit>]")
         elseif args == "on" then
             if ns.Debug and ns.Debug.SetEnabled then ns.Debug:SetEnabled(true) end
         elseif args == "off" then
@@ -54,7 +54,7 @@ SlashCmdList["PBHF"] = function(msg)
                     ns:Print("Auras module not available.")
                 end
             else
-                ns:Print("Usage: /pb debug [on|off|auras <unit>]")
+                -- ns:Print("Usage: /pb debug [on|off|auras <unit>]")
             end
         end
     elseif msg:match("^sample") then
@@ -65,10 +65,10 @@ SlashCmdList["PBHF"] = function(msg)
             ns:Print("Aura sampling module unavailable.")
         end
     elseif msg == "lock" then
-        ns.DB.locked = true; ns:Print("Frames Locked.")
+        ns.DB.locked = true
     elseif msg == "unlock" then
-        ns.DB.locked = false; ns:Print("Frames Unlocked.")
+        ns.DB.locked = false
     else
-        ns:Print("Usage: /pb [config|scan|smartbind|test 5-40|debug|sample|lock|unlock]")
+        -- ns:Print("Usage: /pb [config|scan|smartbind|test 5-40|debug|sample|lock|unlock]")
     end
 end
