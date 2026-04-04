@@ -416,7 +416,8 @@ function Auras:UpdateButtonAuras(btn, cached)
             ind.icon:SetTexture(data.icon)
             ind.countText:SetText((data.count and data.count > 1) and data.count or "")
 
-            local brightness = ns.DB and ns.DB.frame and ns.DB.frame.hotIndicatorBrightness or 1.0
+            local brightness = ns.DB and ns.DB.frame and ns.DB.frame.hotIndicatorBrightness or 0.65
+            local dimAlpha = 0.4 + (brightness * 0.6)
 
             if ind.fill then
                 ind.icon:Show()
@@ -438,19 +439,19 @@ function Auras:UpdateButtonAuras(btn, cached)
                     ind.fill:Show()
                 end
             else
-                ind.icon:SetVertexColor(brightness, brightness, brightness, 1)
+                ind.icon:SetVertexColor(1, 1, 1, dimAlpha)
             end
 
             if data.isMine then
                 if not ind.fill then
-                    ind.icon:SetVertexColor(brightness, brightness, brightness, 1)
+                    ind.icon:SetVertexColor(1, 1, 1, dimAlpha)
                 end
                 if ind.glow then
                     if data.ghost then ind.glow:Hide() else ind.glow:Show() end
                 end
             else
                 if not ind.fill then
-                    ind.icon:SetVertexColor(0.6 * brightness, 0.6 * brightness, 0.6 * brightness, 0.8)
+                    ind.icon:SetVertexColor(0.6, 0.6, 0.6, dimAlpha * 0.7)
                 end
                 if ind.glow then ind.glow:Hide() end
             end

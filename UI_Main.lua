@@ -501,8 +501,8 @@ function UI:LoadStyle(c)
     UIDropDownMenu_SetText(hotStyleDD, (ns.DB.frame.hotIndicatorStyle or "classic") == "classic" and "Classic (Icons)" or "Squares (Boxes)")
 
     y = y - 40
-    local hotBrightSlider = mkSlider(c, "HOT Box Brightness", 0.2, 1.5, 0.05,
-        function() return ns.DB.frame.hotIndicatorBrightness or 1.0 end,
+    local hotBrightSlider = mkSlider(c, "HOT Box Brightness", 0.0, 1.0, 0.05,
+        function() return ns.DB.frame.hotIndicatorBrightness or 0.65 end,
         function(v)
             ns.DB.frame.hotIndicatorBrightness = v
             if ns.Auras and ns.Auras.UpdateButtonAuras then
