@@ -176,13 +176,6 @@ local function CreateHotIndicatorBox(parent, point, x, y)
     icon:Hide()
     f.icon = icon
 
-    local fill = f:CreateTexture(nil, "OVERLAY")
-    fill:SetPoint("TOPLEFT", 1, -1)
-    fill:SetPoint("BOTTOMRIGHT", -1, 1)
-    fill:SetTexture("Interface\\Buttons\\WHITE8X8")
-    fill:SetVertexColor(0.2, 0.85, 0.25, 0.7)
-    f.fill = fill
-
     local count = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     count:SetPoint("BOTTOMRIGHT", 1, -1)
     count:SetFont("Fonts\\FRIZQT__.TTF", 7, "OUTLINE")
