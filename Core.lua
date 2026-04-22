@@ -29,12 +29,12 @@ function ns:IterModules(method, ...)
 end
 
 function ns:Print(msg)
-    -- local f = DEFAULT_CHAT_FRAME or ChatFrame1
-    -- if f then
-    --     f:AddMessage("|cff7cc7ffPB:HF|r: "..tostring(msg))
-    -- else
-    --     print("PB:HF: "..tostring(msg))
-    -- end
+    local f = DEFAULT_CHAT_FRAME or ChatFrame1
+    if f then
+        f:AddMessage("|cff7cc7ffPB:HF|r: "..tostring(msg))
+    else
+        print("PB:HF: "..tostring(msg))
+    end
 end
 
 ns.secureQueue = {}

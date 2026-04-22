@@ -203,6 +203,10 @@ end
 
 function Frames:RefreshContainerPosition(force)
     if not self.container then return end
+    if InCombatLockdown() then
+        self._layoutPending = true
+        return
+    end
     local key = self:GetActiveAnchorKey()
     if not force and self.containerKey == key then return end
     self.containerKey = key
@@ -691,6 +695,10 @@ function Frames:EnsureAnchors(activeGroups)
 end
 
 function Frames:ApplyLayout()
+    if InCombatLockdown() then
+        self._layoutPending = true
+        return
+    end
     local dbf = ns.DB.frame
     local isGrid = dbf.layoutStyle == "grid"
     local cfg = isGrid and dbf.grid or dbf.bars
@@ -1156,6 +1164,11 @@ function Frames:UpdateRange(b)
 end
 
 function Frames:ResetAnchorPositions()
+    if InCombatLockdown() then
+        self._layoutPending = true
+        ns:Print("Layout deferred until combat ends.")
+        return
+    end
     local dbf = ns.DB.frame
     dbf.x = nil
     dbf.y = nil
@@ -1184,10 +1197,16 @@ function Frames:OnEnable()
     self:SetFakeUpdatesEnabled(ns.DB.frame.fakeMode)
 end
 function Frames:OnEvent(event, unit) 
-    if event == "PLAYER_ENTERING_WORLD" or event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
+    if event == "PLAYER_ENTERING_WORLD" then
         self:ApplyLayout() 
+    elseif event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
+        -- Roster:OnEvent -> Roster:Refresh() -> ApplyLayout() handles these
     elseif event == "PLAYER_REGEN_ENABLED" then
         processQueue()
+        if self._layoutPending then
+            self._layoutPending = nil
+            self:ApplyLayout()
+        end
     elseif event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
         for _, b in ipairs(self.buttons) do 
             if b:IsShown() and b.unit then self:UpdateButton(b) end 

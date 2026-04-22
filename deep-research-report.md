@@ -2,11 +2,9 @@
 
 ## Environment and constraints that shape every build
 
-Area 52 is a **classless, Free Pick** realm running on a **3.3.5a (Wrath-era) client** but with **The Burning Crusade-style progression**, including a **level 70 cap** and TBC endgame content. citeturn8view4turn8view3 This matters for addon engineering because (a) most of the underlying UI and combat API is the WotLK-era addon API and secure execution model, while (b) the realm’s “classless” systems add layers of *non-class* build identity that addons must infer from **spells, auras, and custom enchant states**, not from `UnitClass`.
+Area 52 is a **classless, Free Pick** realm running on a **3.3.5a (Wrath-era) client** but with **The Burning Crusade-style progression**, including a **level 70 cap** and TBC endgame content. This matters for addon engineering because (a) most of the underlying UI and combat API is the WotLK-era addon API and secure execution model, while (b) the realm’s “classless” systems add layers of *non-class* build identity that addons must infer from **spells, auras, and custom enchant states**, not from `UnitClass`.
 
-On Classless/Free Pick realms, players assemble their toolkit using **Ability Essence** and **Talent Essence** currencies (earned as you level), and abilities have per-ability costs (often 1–6). citeturn8view3turn8view2turn12view3 The same public documentation also describes **rarity gem / rarity-token style constraints** for abilities and masteries (to discourage “all legendary” toolkits) and describes that learning one member of a mastery can change costs for related abilities. citeturn8view3turn18view0
-
-For addon devs, the important consequence is: **“class” is not the source of truth for role**. The API still returns something in `UnitClass`, but Ascension’s ecosystem has historically required special handling (e.g., community-maintained UI forks note server-side “class name” changes such as “DRUID > HERO” in at least one historical compatibility cycle). citeturn17view1 Even if that specific mapping has changed since then, it’s a strong signal that **hard-coding class-based assumptions is brittle**.
+On Classless/Free Pick realms, players assemble their toolkit using **Ability Essence** and **Talent Essence** currencies (earned as you level), and abilities have per-ability costs (often 1–6). The same public documentation also describes **rarity gem / rarity-token style constraints** for abilities and masteries (to discourage “all legendary” toolkits) and describes that learning one member of a mastery can change costs for related abilities. For addon devs, the important consequence is: **“class” is not the source of truth for role**. The API still returns something in `UnitClass`, but Ascension’s ecosystem has historically required special handling (e.g., community-maintained UI forks note server-side “class name” changes such as “DRUID > HERO” in at least one historical compatibility cycle). Even if that specific mapping has changed since then, it’s a strong signal that **hard-coding class-based assumptions is brittle**.
 
 ## How the Mystic Enchant system works from a gameplay perspective
 
@@ -14,38 +12,19 @@ For addon devs, the important consequence is: **“class” is not the source of
 
 Across Ascension’s public documentation, Mystic Enchants (also called “MEs” or “REs”) are described as a **core build-defining system** that can:
 
-- **Change core spells**, **add new spells**, or provide passive/stat-style effects. citeturn12view0turn13view1  
-- Be managed from a dedicated UI tab inside the Character Advancement interface (default keybind `N`) and via Mystic Altars (open-world fixed locations and player-summoned altars). citeturn12view0turn12view2  
-- Be collected via scrolls, reforging, open-world discoveries, and auction-house trading; and be **saved to a permanent collection** using a currency called **Mystic Extracts**. citeturn12view1turn12view2  
+- **Change core spells**, **add new spells**, or provide passive/stat-style effects. - Be managed from a dedicated UI tab inside the Character Advancement interface (default keybind `N`) and via Mystic Altars (open-world fixed locations and player-summoned altars). - Be collected via scrolls, reforging, open-world discoveries, and auction-house trading; and be **saved to a permanent collection** using a currency called **Mystic Extracts**. A major redesign made Mystic Enchants **slot-based rather than gear-tied**: all characters have **17 slots** to apply Mystic Enchants “regardless of the gear you wear.” The same redesign explicitly aimed to remove friction related to prestiging and swapping gear, since enchants no longer have to be kept aligned with specific equipment pieces. Public wiki documentation for Mystic Enchants also states clear rarity rules (these are **core for inference and addon logic**):
 
-A major redesign made Mystic Enchants **slot-based rather than gear-tied**: all characters have **17 slots** to apply Mystic Enchants “regardless of the gear you wear.” citeturn18view1 The same redesign explicitly aimed to remove friction related to prestiging and swapping gear, since enchants no longer have to be kept aligned with specific equipment pieces. citeturn18view1
-
-Public wiki documentation for Mystic Enchants also states clear rarity rules (these are **core for inference and addon logic**):
-
-- **Legendary** enchants are “in most cases” the base of a build; you can have **one active at a time**. citeturn13view2turn13view1  
-- Legendary enchants “often replace your chosen abilities with modified versions,” making the original versions unusable. citeturn13view2  
-- **Epic** enchants can transform spells, grant conditional buffs, or grant new spells, and you’re **limited to 3 unique epic enchants**. citeturn13view2  
-- **Rare and Uncommon** enchants are smaller benefits; each individual Rare/Uncommon enchant can be used up to **three times** unless stated otherwise in the tooltip. citeturn13view2turn18view3  
-
-Separately, a long-running official guide (from the earlier gear-based era) also documents the **“stacks up to 3”** rule and the “legendary does not stack” principle. citeturn18view3
-
-Finally, there is a concept of **loadouts/presets**: a public guide describes “Mystic Enchant presets” stored in slots, with spellbook actions such as “Activate Preset” and “Save Mystic Enchantment Preset …”. citeturn20view2 Even if the implementation has evolved since the shift to slot-based enchants, it confirms that **“enchant loadout” is an explicit gameplay object** players swap.
+- **Legendary** enchants are “in most cases” the base of a build; you can have **one active at a time**. - Legendary enchants “often replace your chosen abilities with modified versions,” making the original versions unusable. - **Epic** enchants can transform spells, grant conditional buffs, or grant new spells, and you’re **limited to 3 unique epic enchants**. - **Rare and Uncommon** enchants are smaller benefits; each individual Rare/Uncommon enchant can be used up to **three times** unless stated otherwise in the tooltip. Separately, a long-running official guide (from the earlier gear-based era) also documents the **“stacks up to 3”** rule and the “legendary does not stack” principle. Finally, there is a concept of **loadouts/presets**: a public guide describes “Mystic Enchant presets” stored in slots, with spellbook actions such as “Activate Preset” and “Save Mystic Enchantment Preset …”. Even if the implementation has evolved since the shift to slot-based enchants, it confirms that **“enchant loadout” is an explicit gameplay object** players swap.
 
 ### The “spell replacement” concept is not hypothetical
 
 The public sources provide multiple concrete examples of “replacement/override” behaviour:
 
-- “Mass Hysteria” turns **Fear** into an empowered “Fear (Mass Hysteria)” variant, which is functionally a spell replacement. citeturn20view1  
-- Multiple “Power Word: Shield revamp” enchants explicitly rewrite the behaviour of **Power Word: Shield** and its supportive talent/enchants, including new threshold/absorb rules, cooldown changes, and procs. citeturn20view3  
-- Atonement is explicitly described (in a Legendary list) as a damage-to-heal mechanic tied to **Smite**, **Holy Fire**, and **Penance**, healing allies affected by **Grace**. citeturn20view1turn20view3  
-
-For heal/support addons, these examples justify a key design assumption:
+- “Mass Hysteria” turns **Fear** into an empowered “Fear (Mass Hysteria)” variant, which is functionally a spell replacement. - Multiple “Power Word: Shield revamp” enchants explicitly rewrite the behaviour of **Power Word: Shield** and its supportive talent/enchants, including new threshold/absorb rules, cooldown changes, and procs. - Atonement is explicitly described (in a Legendary list) as a damage-to-heal mechanic tied to **Smite**, **Holy Fire**, and **Penance**, healing allies affected by **Grace**. For heal/support addons, these examples justify a key design assumption:
 
 > The “healer kit” on Area 52 is frequently not just “a list of baseline heals”, but a **baseline spell + enchant-defined rewrite** of that spell’s rule set.
 
 ### Visual support
-
-image_group{"layout":"carousel","aspect_ratio":"16:9","query":["Project Ascension Mystic Enchant interface Area 52 screenshot","Project Ascension Mystic Altar screenshot","Ascension classless Character Advancement panel Mystic Enchant tab"] ,"num_per_query":1}
 
 ## How Mystic Enchants likely work technically on a 3.3.5a client
 
@@ -53,19 +32,12 @@ This section separates **confirmed** from **inference**. The server is proprieta
 
 ### Confirmed observables relevant to reverse engineering
 
-- Players can show **IDs in tooltips** via an in-game setting (“Interface → Help → Show id in tooltips”). citeturn8view0  
-  - A community screenshot in that same thread suggests tooltips may show both an “ID” and another identifier (“CharacterAdvancement ID”), implying there may be at least **two distinct IDs** in the ecosystem: a spell/item ID and a “Character Advancement” internal ID. citeturn8view0  
-- Mystic Enchants can be **applied/extracted/reforged** via UI flows, and enchants persist in a collection. citeturn12view1turn12view2turn18view1  
-- Legendary enchants can render a “non-modified spell unusable” by replacing it. citeturn13view2  
-
-These observables constrain the likely technical designs seen by addons.
+- Players can show **IDs in tooltips** via an in-game setting (“Interface → Help → Show id in tooltips”). - A community screenshot in that same thread suggests tooltips may show both an “ID” and another identifier (“CharacterAdvancement ID”), implying there may be at least **two distinct IDs** in the ecosystem: a spell/item ID and a “Character Advancement” internal ID. - Mystic Enchants can be **applied/extracted/reforged** via UI flows, and enchants persist in a collection. - Legendary enchants can render a “non-modified spell unusable” by replacing it. These observables constrain the likely technical designs seen by addons.
 
 ### Likely implementation patterns
 
 #### Spell replacement via “teach new spell + disable/override old spell”
-**Most consistent with**: “Fear transforms into Fear (Mass Hysteria)” and “replaces your chosen abilities with modified versions.” citeturn13view2turn20view1
-
-Typical WotLK private-server approaches compatible with what addons observe:
+**Most consistent with**: “Fear transforms into Fear (Mass Hysteria)” and “replaces your chosen abilities with modified versions.” Typical WotLK private-server approaches compatible with what addons observe:
 
 - The enchant grants a passive “marker” aura and the server intercepts casts of the base spell, rewriting them to cast a different spell ID.
 - The enchant teaches a separate spell ID (new name / new icon / new tooltip) and removes the original spell from the player spellbook (or makes it unusable) while the enchant is active.
@@ -73,19 +45,13 @@ Typical WotLK private-server approaches compatible with what addons observe:
 **Addon implication:** “Which spell is actually being cast” must be derived from **combat log events** and/or the current **spellbook list**, not from static class tables.
 
 #### Passive auras + proc scripts (“hidden aura” + server logic)
-**Most consistent with**: enchants like Atonement, which trigger healing based on damage spells and an aura condition (“affected by Grace”). citeturn20view1turn20view3
-
-Common designs:
+**Most consistent with**: enchants like Atonement, which trigger healing based on damage spells and an aura condition (“affected by Grace”). Common designs:
 
 - Apply a passive aura on the player (possibly hidden) which registers a proc on certain spell families or explicit spell IDs.
 - When an eligible event occurs (damage from specific spells), the server triggers a healing spell on some target set (e.g., allies with Grace).
 
-**Addon implication:** you may never see an explicit “Atonement cast” button press; you’ll see **damage events**, then **heal events** caused by a different spell ID (or the same ID as a triggered effect). This is detectable if you process **COMBAT_LOG_EVENT_UNFILTERED**. citeturn21search2turn21search6
-
-#### Slot-based enchants represented as a stable “build-state” object
-**Most consistent with**: “17 slots to apply … to you regardless of gear” and presence of presets/loadouts. citeturn18view1turn20view2
-
-This suggests the server maintains:
+**Addon implication:** you may never see an explicit “Atonement cast” button press; you’ll see **damage events**, then **heal events** caused by a different spell ID (or the same ID as a triggered effect). This is detectable if you process **COMBAT_LOG_EVENT_UNFILTERED**. #### Slot-based enchants represented as a stable “build-state” object
+**Most consistent with**: “17 slots to apply … to you regardless of gear” and presence of presets/loadouts. This suggests the server maintains:
 
 - A per-character list of “active enchants” bound to slots.
 - A set of “loadouts/presets” that copy those active enchants.
@@ -107,24 +73,19 @@ The practical posture for addon development is therefore:
 
 The most accessible public sources for Mystic Enchant behaviour are:
 
-- Official Ascension news posts describing specific enchants and their effects (patch/change logs). citeturn20view3turn18view1  
-- The community wiki’s **Rarity rules** and **examples** lists (including a partial legendary list and many named examples). citeturn20view1turn13view2  
-- Community archetype/build pages (example: Tide Mender) that explicitly list a legendary enchant and supporting epics/rares, with a written explanation of the role logic. citeturn20view0  
-- In-game tooltips can expose IDs (toggleable), which is the most direct route to spell/enchant IDs for *your addon’s dataset building*. citeturn8view0  
-
-### A practical “seed mapping” table you can start from
+- Official Ascension news posts describing specific enchants and their effects (patch/change logs). - The community wiki’s **Rarity rules** and **examples** lists (including a partial legendary list and many named examples). - Community archetype/build pages (example: Tide Mender) that explicitly list a legendary enchant and supporting epics/rares, with a written explanation of the role logic. - In-game tooltips can expose IDs (toggleable), which is the most direct route to spell/enchant IDs for *your addon’s dataset building*. ### A practical “seed mapping” table you can start from
 
 The table below lists **confirmed** examples where public sources explicitly tie an enchant to specific spells or behaviours. (IDs are not included here unless a public source provides them; in practice you can fill IDs via tooltip/link parsing in-game.)
 
 | Mystic Enchant (example) | Type of behaviour | Affected spells / conditions | What heal/support addons should track | Evidence |
 |---|---|---|---|---|
-| Atonement | Damage-to-heal passive | Direct damage with Smite / Holy Fire / Penance heals nearby allies affected by Grace; reduced in PvP; cannot heal caster | Damage events from those spells; Grace aura presence on allies; resulting heals and their source spell IDs | citeturn20view1turn20view3 |
-| Mass Hysteria | Spell replacement | “Fear spell transforms into Fear (Mass Hysteria)” with additional AoE debuff (Shaken) | Detect replacement spell in spellbook; detect cast events of the transformed spell; debuff tracking | citeturn20view1 |
-| Words of Healing | Legendary build-definer (healing amplify) | Borrowed Time increases crit chance of direct heals; Borrowed Time not consumed by casting; duration reduced instead | Borrowed Time aura tracking; crit-mod window; shield→heal priority changes | citeturn20view3 |
-| Dominant Word: Shield | Threshold augment + CDR | PW:S absorbs 250% below 75% HP; short “additional absorb effect” window; PW:S cooldown reduction; Rapture mana increased | Target HP threshold; PW:S cooldown; short-lived post-cast effect | citeturn20view3 |
-| Earth’s Blessing | Proc/charge system change | Grants 2 charges of Earth Shield; next orb healing increased stacking up to 3; moved to Epic | Earth Shield charges (or equivalent tracking); stack count behaviour; tank buff maintenance | citeturn20view3turn20view0 |
-| Transcendental Embrace | Trigger expansion | “now also triggers from Healing Wave” (implies a proc previously limited) | Spell event correlation: Healing Wave → proc aura or additional effect | citeturn20view3turn20view0 |
-| Low Tide | Legendary build-definer (smart spread) | Each cast of Riptide grants +crit chance for Nature healing on that target; crit heals spread Riptide to nearby ally | Riptide uptime; crit events; spread detection via aura application | citeturn20view0 |
+| Atonement | Damage-to-heal passive | Direct damage with Smite / Holy Fire / Penance heals nearby allies affected by Grace; reduced in PvP; cannot heal caster | Damage events from those spells; Grace aura presence on allies; resulting heals and their source spell IDs | |
+| Mass Hysteria | Spell replacement | “Fear spell transforms into Fear (Mass Hysteria)” with additional AoE debuff (Shaken) | Detect replacement spell in spellbook; detect cast events of the transformed spell; debuff tracking | |
+| Words of Healing | Legendary build-definer (healing amplify) | Borrowed Time increases crit chance of direct heals; Borrowed Time not consumed by casting; duration reduced instead | Borrowed Time aura tracking; crit-mod window; shield→heal priority changes | |
+| Dominant Word: Shield | Threshold augment + CDR | PW:S absorbs 250% below 75% HP; short “additional absorb effect” window; PW:S cooldown reduction; Rapture mana increased | Target HP threshold; PW:S cooldown; short-lived post-cast effect | |
+| Earth’s Blessing | Proc/charge system change | Grants 2 charges of Earth Shield; next orb healing increased stacking up to 3; moved to Epic | Earth Shield charges (or equivalent tracking); stack count behaviour; tank buff maintenance | |
+| Transcendental Embrace | Trigger expansion | “now also triggers from Healing Wave” (implies a proc previously limited) | Spell event correlation: Healing Wave → proc aura or additional effect | |
+| Low Tide | Legendary build-definer (smart spread) | Each cast of Riptide grants +crit chance for Nature healing on that target; crit heals spread Riptide to nearby ally | Riptide uptime; crit events; spread detection via aura application | |
 
 ### Base spell IDs: what you can cite publicly vs. what you should extract in-game
 
@@ -132,13 +93,9 @@ You asked for spell IDs and aura IDs. Public WotLK databases can provide base sp
 
 Two examples (from a WotLK spell database) illustrate the principle:
 
-- **Power Word: Shield** (Rank 1) has spell ID **592**. citeturn21search21  
-- **Flash Heal** (Rank 7) has spell ID **9472**. citeturn21search32  
+- **Power Word: Shield** (Rank 1) has spell ID **592**. - **Flash Heal** (Rank 7) has spell ID **9472**. Those IDs are enough to demonstrate the workflow. For Ascension-specific IDs (custom spells, transformed spell variants, custom enchant spells), the most reliable pipeline is:
 
-Those IDs are enough to demonstrate the workflow. For Ascension-specific IDs (custom spells, transformed spell variants, custom enchant spells), the most reliable pipeline is:
-
-1. Turn on the in-game “Show id in tooltips” option. citeturn8view0  
-2. Use tooltip parsing and/or spell links (and combat log) to harvest IDs into your addon’s local database.
+1. Turn on the in-game “Show id in tooltips” option. 2. Use tooltip parsing and/or spell links (and combat log) to harvest IDs into your addon’s local database.
 
 ## Healer/support build logic in a classless Mystic Enchant world
 
@@ -157,20 +114,15 @@ Mystic Enchants often define *which* of those engines is primary.
 
 The community “Tide Mender” archetype page is valuable because it explicitly explains a legendary enchant as the central engine:
 
-- **Low Tide** makes **Riptide** the “core healing engine,” adds crit escalation, and spreads Riptide on critical heals. citeturn20view0  
-- It lists supporting epics including **Transcendental Embrace** and **Earth’s Blessing**, and rare/uncommon choices such as **Healing Way** and “Focused Chain”. citeturn20view0turn20view3  
-
-From an addon-design perspective, this implies a specific *healing intent signature*:
+- **Low Tide** makes **Riptide** the “core healing engine,” adds crit escalation, and spreads Riptide on critical heals. - It lists supporting epics including **Transcendental Embrace** and **Earth’s Blessing**, and rare/uncommon choices such as **Healing Way** and “Focused Chain”. From an addon-design perspective, this implies a specific *healing intent signature*:
 
 - Heavy emphasis on **HoT maintenance** (Riptide uptime across multiple targets).
 - Value spikes around **crit events** (because crit propagates the HoT).
-- Tank support tied to **Earth Shield** behaviour (charges and orb amplification). citeturn20view0turn20view3  
-
-A next-gen healing addon should therefore treat this not as “Shaman healer” but as a **Riptide-centric propagation engine** and surface UI cues accordingly (e.g., “Riptide missing” indicators, crit-window cues, Earth Shield charge tracking).
+- Tank support tied to **Earth Shield** behaviour (charges and orb amplification). A next-gen healing addon should therefore treat this not as “Shaman healer” but as a **Riptide-centric propagation engine** and surface UI cues accordingly (e.g., “Riptide missing” indicators, crit-window cues, Earth Shield charge tracking).
 
 ### Confirmed support archetype example: Atonement-style combat healer
 
-Atonement is explicitly described as damage-to-heal tied to **Smite**, **Holy Fire**, and **Penance**, healing allies affected by **Grace**. citeturn20view1turn20view3 This is a different archetype with a distinct intent signature:
+Atonement is explicitly described as damage-to-heal tied to **Smite**, **Holy Fire**, and **Penance**, healing allies affected by **Grace**. This is a different archetype with a distinct intent signature:
 
 - The “heal buttons” might be fewer; the build’s throughput is partly measured in **damage GCDs**, not just healing GCDs.
 - Triage decisions become: “Which ally should have Grace (or an equivalent maintenance aura) right now?” and “Is it safe to DPS to heal?”
@@ -182,7 +134,7 @@ Addon requirements differ heavily from classic Healbot-style logic:
 
 ### Confirmed shield-centric support: Power Word: Shield ecosystems
 
-Public patch notes document multiple Mystic Enchants and talent interactions built around **Power Word: Shield**, including conditions like “below 75%” threshold amplification and making Borrowed Time behave differently. citeturn20view3 This supports a third archetype:
+Public patch notes document multiple Mystic Enchants and talent interactions built around **Power Word: Shield**, including conditions like “below 75%” threshold amplification and making Borrowed Time behave differently. This supports a third archetype:
 
 - Preventative mitigation and triage tied to **cooldown micro-optimisation** (shield CDR, threshold bonuses).
 - Healing throughput strongly influenced by *absorbs* rather than raw effective healing, and by shield-related procs.
@@ -190,9 +142,7 @@ Public patch notes document multiple Mystic Enchants and talent interactions bui
 Addon design consequences:
 
 - Classic “missing health %” triage isn’t enough; you also need **absorb-state awareness** (even if approximated) and “shield-on-cooldown” logic.
-- When threshold conditions are part of the enchant, you need **target HP threshold cues** (e.g., highlight targets below 75% for Dominant Word: Shield). citeturn20view3  
-
-### A practical spell-function catalogue (for inference), designed for Area 52
+- When threshold conditions are part of the enchant, you need **target HP threshold cues** (e.g., highlight targets below 75% for Dominant Word: Shield). ### A practical spell-function catalogue (for inference), designed for Area 52
 
 Because class is not reliable, you want a spell taxonomy orthogonal to class. The table below is an **engineering-oriented** categorisation (not a complete spell list). You populate it from spellbook scans + combat log discovery over time.
 
@@ -212,38 +162,31 @@ This taxonomy is the backbone of dynamic role inference and a “toolkit registr
 
 ### The core rule: addons are client-side; secure execution still applies
 
-Even on a private server, the addon sandbox is still constrained by the **secure execution/taint/combat lockdown** model. Secure action buttons exist to allow protected actions (casting spells, macro execution) via user clicks, but you cannot freely rewire protected behaviours during combat. citeturn21search3turn21search15
-
-The practical ceiling for a Healbot-like addon is therefore:
+Even on a private server, the addon sandbox is still constrained by the **secure execution/taint/combat lockdown** model. Secure action buttons exist to allow protected actions (casting spells, macro execution) via user clicks, but you cannot freely rewire protected behaviours during combat. The practical ceiling for a Healbot-like addon is therefore:
 
 - You can build **secure click-casting frames** (Healbot/VuhDo/Clique style) that cast spells on click.
 - You cannot build a bot: no fully automatic target selection and spell casting without user input.
 
 ### WeakAuras-style logic on Ascension is not “approximate”; it’s real
 
-The Ascension launcher ecosystem includes a maintained **WeakAuras 3.3.5a backport** (“WeakAuras Ascension”), explicitly installed via the launcher. citeturn10view1turn11view1 This confirms that:
+The Ascension launcher ecosystem includes a maintained **WeakAuras 3.3.5a backport** (“WeakAuras Ascension”), explicitly installed via the launcher. This confirms that:
 
 - “WeakAuras-style” event-driven displays, triggers, and custom Lua logic are viable on this client.
 - Your addon can either integrate with WeakAuras (export triggers / provide aura packs) or implement a parallel internal trigger engine.
 
 ### ElvUI-style UI logic is also supported, but may rely on patches
 
-Ascension maintains an ElvUI variant via the launcher, and community history shows that some UI replacements required client patch files for Ascension-specific changes. citeturn9view0turn17view0 The implication is:
+Ascension maintains an ElvUI variant via the launcher, and community history shows that some UI replacements required client patch files for Ascension-specific changes. The implication is:
 
 - A sophisticated raid-frame replacement is feasible.
-- You should expect **Ascension-specific quirks** (custom resources, modified UI elements, renamed classes, new events) that require compatibility layers. citeturn17view1turn16search2  
-
-### What you can detect reliably on Area 52
+- You should expect **Ascension-specific quirks** (custom resources, modified UI elements, renamed classes, new events) that require compatibility layers. ### What you can detect reliably on Area 52
 
 You can usually build robust logic using combinations of:
 
 - **Spellbook scanning** (what spells exist, names/ranks/icons, and whether they are usable).
 - **Cooldown queries** (whether a spell is available via `GetSpellCooldown`-style calls).
 - **Aura scanning** (`UnitAura`) for buffs/debuffs on player and party/raid units.
-- **Combat log processing** via `COMBAT_LOG_EVENT_UNFILTERED`, which is explicitly the recommended unfiltered stream for addon use, and contains spell identifiers in its payload depending on the subevent. citeturn21search2turn21search6  
-- **Tooltip parsing**, especially because Ascension can display IDs in tooltips (toggleable). citeturn8view0  
-
-### What you probably cannot detect (or should treat as unreliable)
+- **Combat log processing** via `COMBAT_LOG_EVENT_UNFILTERED`, which is explicitly the recommended unfiltered stream for addon use, and contains spell identifiers in its payload depending on the subevent. - **Tooltip parsing**, especially because Ascension can display IDs in tooltips (toggleable). ### What you probably cannot detect (or should treat as unreliable)
 
 - Fully server-hidden variables (e.g., internal enchant-slot metadata) **unless Ascension exposes a custom API**.
 - The “true” effect of a spell if Ascension changes server-side coefficients without updating client tooltips (possible on private servers). In those cases, only *observed combat log outcomes* tell the truth.
@@ -253,11 +196,7 @@ You can usually build robust logic using combinations of:
 
 **Yes, often**, because replacements tend to show up in at least one of:
 
-- Spellbook: the transformed spell has its own name/ID (e.g., “Fear (Mass Hysteria)”). citeturn20view1  
-- Combat log: you’ll see `SPELL_CAST_SUCCESS` / `SPELL_DAMAGE` / `SPELL_HEAL` for the transformed spell rather than the base spell. citeturn21search2turn21search6  
-- Tooltips: you can capture IDs if visible. citeturn8view0  
-
-**No, not always**, if the enchant modifies only server-side proc logic while keeping the same base spell ID and name. In that case, detect by *outcomes* (extra heals, altered cooldown cadence, extra aura applications).
+- Spellbook: the transformed spell has its own name/ID (e.g., “Fear (Mass Hysteria)”). - Combat log: you’ll see `SPELL_CAST_SUCCESS` / `SPELL_DAMAGE` / `SPELL_HEAL` for the transformed spell rather than the base spell. - Tooltips: you can capture IDs if visible. **No, not always**, if the enchant modifies only server-side proc logic while keeping the same base spell ID and name. In that case, detect by *outcomes* (extra heals, altered cooldown cadence, extra aura applications).
 
 ## Addon design blueprint for an intelligent healer/support system
 
@@ -284,57 +223,55 @@ Pseudocode (Lua-style):
 ```lua
 -- Core registry schema
 SpellRegistry = {
-  -- [spellID] = {
-  --   name = "...",
-  --   icon = ...,
-  --   bookType = "spell",   -- or "pet"
-  --   isPassive = false,
-  --   castTimeMs = 1500,    -- parsed
-  --   isHelpful = true,     -- inferred
-  --   tags = { direct_heal=true, ... },
-  -- }
+ -- [spellID] = {
+ -- name = "...",
+ -- icon = ...,
+ -- bookType = "spell", -- or "pet"
+ -- isPassive = false,
+ -- castTimeMs = 1500, -- parsed
+ -- isHelpful = true, -- inferred
+ -- tags = { direct_heal=true, ... },
+ -- }
 }
 
 local function GetSpellIDFromLink(link)
-  if not link then return nil end
-  local id = link:match("Hspell:(%d+)")
-  return id and tonumber(id) or nil
+ if not link then return nil end
+ local id = link:match("Hspell:(%d+)")
+ return id and tonumber(id) or nil
 end
 
 local function ScanSpellbook()
-  wipe(SpellRegistry)
+ wipe(SpellRegistry)
 
-  for tab = 1, GetNumSpellTabs() do
-    local _, _, offset, numSpells = GetSpellTabInfo(tab)
-    for i = 1, numSpells do
-      local index = offset + i
-      local spellName, spellRank = GetSpellBookItemName(index, BOOKTYPE_SPELL)
-      local icon = GetSpellBookItemTexture(index, BOOKTYPE_SPELL)
-      local isPassive = IsPassiveSpell(index, BOOKTYPE_SPELL)
+ for tab = 1, GetNumSpellTabs() do
+ local _, _, offset, numSpells = GetSpellTabInfo(tab)
+ for i = 1, numSpells do
+ local index = offset + i
+ local spellName, spellRank = GetSpellBookItemName(index, BOOKTYPE_SPELL)
+ local icon = GetSpellBookItemTexture(index, BOOKTYPE_SPELL)
+ local isPassive = IsPassiveSpell(index, BOOKTYPE_SPELL)
 
-      local link = GetSpellLink(index, BOOKTYPE_SPELL)
-      local spellID = GetSpellIDFromLink(link)
+ local link = GetSpellLink(index, BOOKTYPE_SPELL)
+ local spellID = GetSpellIDFromLink(link)
 
-      if spellID and spellName then
-        SpellRegistry[spellID] = SpellRegistry[spellID] or {}
-        local s = SpellRegistry[spellID]
-        s.name = spellName
-        s.rank = spellRank
-        s.icon = icon
-        s.isPassive = isPassive
-        s.bookType = "spell"
-      end
-    end
-  end
+ if spellID and spellName then
+ SpellRegistry[spellID] = SpellRegistry[spellID] or {}
+ local s = SpellRegistry[spellID]
+ s.name = spellName
+ s.rank = spellRank
+ s.icon = icon
+ s.isPassive = isPassive
+ s.bookType = "spell"
+ end
+ end
+ end
 end
 ```
 
 To make this Ascension-grade, you add:
 
 - Tooltip parsing to infer tags (heal vs damage vs cleanse).
-- A compatibility layer to recognise **transformed spell names** (e.g., “Fear (X)”, “Blizzard (Hailstorm)”) and mark them as potential enchant-derived overrides. citeturn20view1  
-
-### Tracking Mystic Enchants without relying on secret server APIs
+- A compatibility layer to recognise **transformed spell names** (e.g., “Fear (X)”, “Blizzard (Hailstorm)”) and mark them as potential enchant-derived overrides. ### Tracking Mystic Enchants without relying on secret server APIs
 
 You should assume you *may not* have a clean API like `GetActiveMysticEnchants()`. Build a multi-signal approach:
 
@@ -345,41 +282,38 @@ You should assume you *may not* have a clean API like `GetActiveMysticEnchants()
 - If you detect both a base spell and a transformed variant, mark the base spell as “overridden” and prefer the transformed ID for click-casting and cooldown displays.
 
 **Signal tier 3: combat-log-derived proc graph**
-- Build edges like: `Smite damage → Atonement heal` when the temporal correlation is strong and repeats. citeturn20view1turn21search2  
-- Build edges like: `Riptide crit heal → aura spread` for Low Tide-like behaviours. citeturn20view0  
-
-### Role inference that works in a classless environment
+- Build edges like: `Smite damage → Atonement heal` when the temporal correlation is strong and repeats. - Build edges like: `Riptide crit heal → aura spread` for Low Tide-like behaviours. ### Role inference that works in a classless environment
 
 Rather than “if priest then healer,” compute a role vector from observed capability.
 
 A workable scoring model:
 
 - Compute a **kit signature** from registry tags:
-  - `heal_spells_weight`
-  - `dispels_weight`
-  - `external_cds_weight`
-  - `damage_to_heal_weight` (detected from proc graph)
-  - `absorb_weight`
+ - `heal_spells_weight`
+ - `dispels_weight`
+ - `external_cds_weight`
+ - `damage_to_heal_weight` (detected from proc graph)
+ - `absorb_weight`
 - Compute a **behaviour signature** from combat log over the last N seconds:
-  - percentage of GCDs spent on `SPELL_HEAL` or helpful auras
-  - percentage of damage events that trigger healing events
-  - average healing per cast by spell category
+ - percentage of GCDs spent on `SPELL_HEAL` or helpful auras
+ - percentage of damage events that trigger healing events
+ - average healing per cast by spell category
 
 Then infer “intent”:
 
 ```lua
 -- Returns {healer=0..1, support=0..1, dps=0..1}
 local function InferRoleVector(kit, behaviour)
-  local healer = clamp01(0.5*kit.heal + 0.3*kit.dispel + 0.2*behaviour.heal_gcd_share)
-  local support = clamp01(0.4*kit.externals + 0.3*kit.absorb + 0.3*behaviour.buff_uptime_share)
-  local dps = clamp01(0.6*behaviour.damage_gcd_share + 0.4*kit.damage)
+ local healer = clamp01(0.5*kit.heal + 0.3*kit.dispel + 0.2*behaviour.heal_gcd_share)
+ local support = clamp01(0.4*kit.externals + 0.3*kit.absorb + 0.3*behaviour.buff_uptime_share)
+ local dps = clamp01(0.6*behaviour.damage_gcd_share + 0.4*kit.damage)
 
-  -- Atonement-like builds lift healer even with high dps:
-  if behaviour.damage_to_heal_ratio > 0.2 then
-    healer = clamp01(healer + 0.2)
-  end
+ -- Atonement-like builds lift healer even with high dps:
+ if behaviour.damage_to_heal_ratio > 0.2 then
+ healer = clamp01(healer + 0.2)
+ end
 
-  return { healer=healer, support=support, dps=dps }
+ return { healer=healer, support=support, dps=dps }
 end
 ```
 
@@ -390,11 +324,9 @@ This lets your unit frames (ElvUI-style) display an inferred “role badge” wi
 Classic Healbot logic often does: “lowest HP → fastest heal.” On Ascension, your addon should instead:
 
 1. Maintain **engine invariants**:
-   - If the build’s main throughput depends on maintaining an aura (Riptide, Grace, Earth Shield, etc.), missing-maintenance targets get elevated priority. citeturn20view0turn20view1  
-2. Apply **cooldown/threshold rules**:
-   - e.g., if you detect Dominant Word: Shield style threshold bonuses, prefer shield on targets under that threshold. citeturn20view3  
-3. Choose an action set that respects secure execution:
-   - Provide recommendations and highlighting, but actual casts still happen via click or keybind.
+ - If the build’s main throughput depends on maintaining an aura (Riptide, Grace, Earth Shield, etc.), missing-maintenance targets get elevated priority. 2. Apply **cooldown/threshold rules**:
+ - e.g., if you detect Dominant Word: Shield style threshold bonuses, prefer shield on targets under that threshold. 3. Choose an action set that respects secure execution:
+ - Provide recommendations and highlighting, but actual casts still happen via click or keybind.
 
 A triage score function should include:
 
@@ -402,13 +334,9 @@ A triage score function should include:
 - Incoming damage estimate (approximate via recent damage events from combat log).
 - Whether the target already has your key HoTs/shields.
 - Whether the target is a tank (inferred by threat/stance/mitigation buffs) or is taking the most damage over time.
-- Whether applying a maintenance aura enables your engine (e.g., Grace enables damage-to-heal routing). citeturn20view1turn20view3  
+- Whether applying a maintenance aura enables your engine (e.g., Grace enables damage-to-heal routing). ### Click-casting implementation posture
 
-### Click-casting implementation posture
-
-For a Healbot-like UX you will use secure action buttons. The secure templates are designed specifically to allow protected actions via attributes, but combat lockdown restricts what you can change dynamically. citeturn21search3turn21search15
-
-Engineering rule: **Pre-build your click maps out of combat**, and swap by secure state changes when permitted (or queue changes until combat ends).
+For a Healbot-like UX you will use secure action buttons. The secure templates are designed specifically to allow protected actions via attributes, but combat lockdown restricts what you can change dynamically. Engineering rule: **Pre-build your click maps out of combat**, and swap by secure state changes when permitted (or queue changes until combat ends).
 
 ## What we can realistically build on Ascension with addon APIs similar to Healbot, WeakAuras, and ElvUI
 
@@ -417,34 +345,25 @@ A realistic “next-generation intelligent healing/support addon” for Area 52 
 What is realistically achievable:
 
 - A Healbot-like click-casting frame system with:
-  - Dynamic spell assignment based on **what spells you actually know** (spellbook scan).
-  - Robust support for transformed/replaced spells by preferring the spell IDs observed in the spellbook and combat log (e.g., “Fear (Mass Hysteria)” style cases). citeturn20view1turn21search2  
-  - Separate “engine modes” (HoT engine, absorb engine, damage-to-heal engine) that are selected by **role vector inference** and updated as enchants/spells change.
+ - Dynamic spell assignment based on **what spells you actually know** (spellbook scan).
+ - Robust support for transformed/replaced spells by preferring the spell IDs observed in the spellbook and combat log (e.g., “Fear (Mass Hysteria)” style cases). - Separate “engine modes” (HoT engine, absorb engine, damage-to-heal engine) that are selected by **role vector inference** and updated as enchants/spells change.
 
 - WeakAuras-style logic is fully feasible:
-  - Ascension maintains a 3.3.5a WeakAuras backport via its launcher ecosystem, confirming that sophisticated trigger logic, custom Lua, and combat-event-driven displays are normal on this platform. citeturn10view1turn11view1  
-  - Your addon can either (a) generate WeakAuras exports for build engines, or (b) include an internal trigger engine using the same event model.
+ - Ascension maintains a 3.3.5a WeakAuras backport via its launcher ecosystem, confirming that sophisticated trigger logic, custom Lua, and combat-event-driven displays are normal on this platform. - Your addon can either (a) generate WeakAuras exports for build engines, or (b) include an internal trigger engine using the same event model.
 
 - ElvUI-style UI augmentation is feasible:
-  - Ascension maintains an ElvUI fork in its launcher repository, and historically some UI projects required Ascension-specific patches/config to account for the realm’s custom features. citeturn9view0turn17view0  
-  - This supports the expectation that a “smart raid frame” addon can coexist with or extend ElvUI rather than replace everything.
+ - Ascension maintains an ElvUI fork in its launcher repository, and historically some UI projects required Ascension-specific patches/config to account for the realm’s custom features. - This supports the expectation that a “smart raid frame” addon can coexist with or extend ElvUI rather than replace everything.
 
 - Dynamic role inference is feasible and should outperform class-based role guessing:
-  - Area 52’s classless design explicitly frames the character as “mix and match spells and talents from ANY class,” gated by essence and other constraints. citeturn8view3turn8view4  
-  - Therefore, “what you cast” and “what you maintain” is the correct signal. Your addon can infer:
-    - “True healer” vs. hybrid support vs. DPS-support
-    - whether the build is maintenance-driven (HoT/shield) or event-driven (damage-to-heal)
-  - It can do so by combining spellbook + aura + combat log signals, using `COMBAT_LOG_EVENT_UNFILTERED` as the primary event stream. citeturn21search2turn21search6  
+ - Area 52’s classless design explicitly frames the character as “mix and match spells and talents from ANY class,” gated by essence and other constraints. - Therefore, “what you cast” and “what you maintain” is the correct signal. Your addon can infer:
+ - “True healer” vs. hybrid support vs. DPS-support
+ - whether the build is maintenance-driven (HoT/shield) or event-driven (damage-to-heal)
+ - It can do so by combining spellbook + aura + combat log signals, using `COMBAT_LOG_EVENT_UNFILTERED` as the primary event stream. What remains fundamentally limited:
 
-What remains fundamentally limited:
-
-- You cannot automate decisions into casts without user input due to secure execution/taint/combat lockdown constraints. Secure action templates enable click-casting, but do not remove the requirement for human action in combat. citeturn21search3turn21search15  
-- You cannot perfectly “see” server-hidden enchant logic unless it expresses itself as:
-  - a spell in your spellbook,
-  - an aura on a unit,
-  - or a combat-log-visible event chain.
-- You should expect to maintain an evolving dataset because Ascension actively redesigns how enchantments are structured over time (e.g., large overhauls like slot-based enchants, and seasonal systems that restructure enchant components). citeturn18view1turn18view2  
-
-The net conclusion for engineering is optimistic:
+- You cannot automate decisions into casts without user input due to secure execution/taint/combat lockdown constraints. Secure action templates enable click-casting, but do not remove the requirement for human action in combat. - You cannot perfectly “see” server-hidden enchant logic unless it expresses itself as:
+ - a spell in your spellbook,
+ - an aura on a unit,
+ - or a combat-log-visible event chain.
+- You should expect to maintain an evolving dataset because Ascension actively redesigns how enchantments are structured over time (e.g., large overhauls like slot-based enchants, and seasonal systems that restructure enchant components). The net conclusion for engineering is optimistic:
 
 > A Healbot-class addon that is **build-aware**, **Mystic Enchant‑aware**, and **combat-log‑learning** can be built on Area 52 today, and it can be substantially more helpful than traditional class-based healing addons—provided it treats Mystic Enchants as a dynamic rules layer and continuously learns the player’s actual kit from live data rather than from class assumptions.

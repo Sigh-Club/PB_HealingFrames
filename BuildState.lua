@@ -183,7 +183,7 @@ function BuildState:Classify(silent)
         ns.RoleInference:Update()
     end
 
-    if ns.Debug then
+    if ns.Debug and not silent then
         ns:Debug(string.format("BuildState: mode=%s heal=%.2f hot=%.2f shield=%.2f d2h=%.2f",
             newMode,
             self.kitSignature.heal or 0,
@@ -225,8 +225,6 @@ end
 
 function BuildState:OnEvent(event)
     if event == "PLAYER_TALENT_UPDATE" or event == "CHARACTER_POINTS_CHANGED" then
-        self:Classify(true)
-    elseif event == "PLAYER_REGEN_ENABLED" then
         self:Classify(true)
     end
 end

@@ -117,7 +117,7 @@ function EnchantDetect:DiffSpellbook()
     return added, removed
 end
 
-function EnchantDetect:FullScan()
+function EnchantDetect:FullScan(silent)
     wipe(self.overrides)
     if ns.SpellBook and ns.SpellBook.GetBindable then
         local bindable = ns.SpellBook:GetBindable()
@@ -133,7 +133,7 @@ function EnchantDetect:FullScan()
     end
     self:ScanPlayerAuras()
     self:DiffSpellbook()
-    if ns.Debug then
+    if ns.Debug and not silent then
         local oc = 0
         for _ in pairs(self.overrides) do oc = oc + 1 end
         local ec = 0

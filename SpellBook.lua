@@ -159,7 +159,7 @@ function SpellBook:Scan(force, silent)
     self.stats.healing = 0
     for _, e in ipairs(self.bindable) do if e.role == "heal" or e.role == "hot" or e.role == "shield_absorb" then self.stats.healing = self.stats.healing + 1 end end
     
-    if ns.EnchantDetect then ns.EnchantDetect:FullScan() end
+    if ns.EnchantDetect then ns.EnchantDetect:FullScan(silent) end
     if ns.BuildState then ns.BuildState:Classify(silent) end
 end
 
