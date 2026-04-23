@@ -6,6 +6,9 @@ BuildState.engineMode = "unknown"
 BuildState.kitSignature = {}
 BuildState.maintenanceAuraList = {}
 BuildState.thresholdRules = {}
+BuildState.lastBindableCount = 0
+BuildState._inLoginGrace = false
+BuildState._initialScanDone = false
 
 local function lower(s) return s and string.lower(s) or "" end
 
@@ -158,6 +161,8 @@ end
 function BuildState:Classify(silent)
     if not ns.SpellBook then return end
     local bindable = ns.SpellBook:GetBindable()
+    if #bindable == 0 then return end
+
     local counts = countByRole(bindable)
     local newMode = detectEngineMode(counts)
 
@@ -165,11 +170,27 @@ function BuildState:Classify(silent)
 
     local changed = newMode ~= self.engineMode
     self.engineMode = newMode
+    if newMode ~= "unknown" then
+        ns.DB.engineMode = newMode
+    end
 
     self.maintenanceAuraList = deriveMaintenanceAuras(newMode)
     self.thresholdRules = deriveThresholdRules()
 
+    local currentBindableCount = #bindable
+    local newSpellsArrived = self._initialScanDone and currentBindableCount > self.lastBindableCount
+    self.lastBindableCount = currentBindableCount
+    self._initialScanDone = true
+
+    local shouldSmartBind = false
     if changed and newMode ~= "unknown" then
+        shouldSmartBind = true
+    elseif newSpellsArrived and self._inLoginGrace and newMode ~= "unknown" then
+        shouldSmartBind = true
+        ns:Debug("BuildState: new spells detected during login grace, re-binding")
+    end
+
+    if shouldSmartBind and not ns.DB.bindingsCustomized then
         if ns.Bindings and ns.Bindings.SmartBind then
             ns.Bindings:SmartBind(silent)
         end
@@ -216,10 +237,18 @@ function BuildState:GetThresholdRules()
 end
 
 function BuildState:OnInitialize()
+    if ns.DB.engineMode then
+        self.engineMode = ns.DB.engineMode
+    end
     self:Classify(true)
 end
 
 function BuildState:OnEnable()
+    if ns.DB.engineMode then
+        self.engineMode = ns.DB.engineMode
+    end
+    self._inLoginGrace = true
+    C_Timer.After(60, function() self._inLoginGrace = false end)
     self:Classify(true)
 end
 

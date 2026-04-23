@@ -95,6 +95,7 @@ end
 
 function Bindings:SetBinding(slot, btype, value)
     ns.DB.bindings[slot] = { type = btype, value = value }
+    ns.DB.bindingsCustomized = true
     if ns.ClickCast then ns.ClickCast:RefreshAll() end
     if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
 end
@@ -121,6 +122,7 @@ end
 
 function Bindings:Clear(slot)
     ns.DB.bindings[slot] = nil
+    ns.DB.bindingsCustomized = true
     if ns.ClickCast then ns.ClickCast:RefreshAll() end
     if ns.UI_Main then ns.UI_Main:RefreshKeybinds() end
 end
@@ -149,6 +151,8 @@ function Bindings:SmartBind(silent)
         ns:Debug("SmartBind failed: Player in combat", true)
         return
     end
+
+    ns.DB.bindingsCustomized = false
 
     local intel = ns.HealingIntel or {}
     local prioritiesMap = nil

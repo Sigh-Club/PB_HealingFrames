@@ -84,6 +84,8 @@ local function EnsureSaved()
     ns.DB.bindings = ns.DB.bindings or {}
     ns.DB.scan = ns.DB.scan or {}
     ns.DB.spellRoles = ns.DB.spellRoles or {}
+    ns.DB.engineMode = ns.DB.engineMode or "unknown"
+    if ns.DB.bindingsCustomized == nil then ns.DB.bindingsCustomized = false end
     
     local f = ns.DB.frame
     f.layoutStyle = f.layoutStyle or "bars"

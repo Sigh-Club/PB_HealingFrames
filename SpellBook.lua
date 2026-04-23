@@ -164,7 +164,10 @@ function SpellBook:Scan(force, silent)
 end
 
 function SpellBook:OnInitialize() end
-function SpellBook:OnEnable() C_Timer.After(5, function() self:Scan(true, true) end) end
+function SpellBook:OnEnable()
+    C_Timer.After(5, function() self:Scan(true, true) end)
+    C_Timer.After(15, function() self:Scan(true, true) end)
+end
 function SpellBook:OnEvent(event)
     if event == "LEARNED_SPELL_IN_TAB" or event == "SPELLS_CHANGED" or event == "PLAYER_TALENT_UPDATE" or event == "CHARACTER_POINTS_CHANGED" then
         self:Scan(false, true)
